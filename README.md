@@ -1,5 +1,5 @@
 # Increasing the performance of data clustering techniques
-Thesis under of Master of Science in Software Engineering for Internet and Mobile Applications
+Thesis under Master of Science in Software Engineering for Internet and Mobile Applications
 
 Department of Computer Science and Engineering
 University of Applied Sciences of Thessaly (TEI of Thessaly)
