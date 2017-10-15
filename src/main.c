@@ -1,36 +1,76 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "k-means.h"
 
-int main(void)
+#include "read_file.h"
+
+void argumentsValidator(int numberOfArguments);
+void printData(double **array, int nRows, int nCols);
+
+int main(int argc, const char *argv[])
 {
-    int nrows = 10;
-    int ncols = 2;
-    int row, col;
-    int k;
-    int **rptr;
-    int *aptr;
+    printf("MAin\n");
+    argumentsValidator(argc);
+
+    int k = atoi(argv[1]);
+    const char *fileName = argv[2];
+
+    int numberOfRows, numberOfColumns;
+    double *arrayPointer;
+    double **rowPointer;
+
+    countRowsCols(fileName, &numberOfRows, &numberOfColumns);
+
+    printf("Rows: %d\nCols: %d\n", numberOfRows, numberOfColumns);
 
     // allocate the memory for the array
-    aptr = malloc(nrows * ncols * sizeof(int));
-    if(aptr == NULL){
+    arrayPointer = malloc(numberOfRows * numberOfColumns * sizeof(double));
+    if (arrayPointer == NULL)
+    {
         printf("\nFailure to allocate room for the array");
         exit(0);
     }
     // allocate room for the pointers to the rows
-    rptr = malloc(nrows * sizeof(int *));
-    if(rptr == NULL){
+    rowPointer = malloc(numberOfRows * sizeof(double *));
+    if (rowPointer == NULL)
+    {
         printf("\nFailure to allocate room for pointers");
         exit(0);
     }
     // point the pointers
-    for(k = 0; k < nrows; k++)
+    int i;
+    for (i = 0; i < numberOfRows; i++)
     {
-        rptr[k] = aptr + (k * ncols);
+        rowPointer[i] = arrayPointer + (i * numberOfColumns);
     }
 
-    fillData(rptr, nrows, ncols);
-    printf("\nPrinte the array \n");
-    printData(rptr, nrows, ncols);
+    readFile(fileName, rowPointer);
+    printData(rowPointer, numberOfRows, numberOfColumns);
     return 0;
+}
+
+/**
+ * Validate the number of arguments 
+ */
+void argumentsValidator(int numberOfArguments)
+{
+    if (numberOfArguments < 3)
+    {
+        printf("Error on arguments\n");
+        printf("Usage: ./main K filePath\n");
+        printf("Example: ./main 3 data/sample.csv\n");
+        exit(0);
+    }
+}
+
+void printData(double **array, int nRows, int nCols)
+{
+    int row, column;
+    for (row = 0; row < nRows; row++)
+    {
+        for (column = 0; column < nCols; column++)
+        {
+            printf("%lf ", array[row][column]);
+        }
+        printf("\n");
+    }
 }
