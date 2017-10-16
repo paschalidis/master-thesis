@@ -2,9 +2,10 @@
 #include <stdlib.h>
 
 #include "read_file.h"
+#include "k-means.h"
 
 void argumentsValidator(int numberOfArguments);
-void printData(double **array, int nRows, int nCols);
+void printData(double **array, int *nRows, int *nCols, int *cluster, int *k);
 
 int main(int argc, const char *argv[])
 {
@@ -44,7 +45,12 @@ int main(int argc, const char *argv[])
     }
 
     readFile(fileName, rowPointer);
-    printData(rowPointer, numberOfRows, numberOfColumns);
+
+    int *clusters;
+    clusters = run(rowPointer, &numberOfRows, numberOfColumns, k);
+
+    // done: refactor print data to print per cluster and points
+    printData(rowPointer, &numberOfRows, &numberOfColumns, clusters, &k);
     return 0;
 }
 
@@ -62,12 +68,30 @@ void argumentsValidator(int numberOfArguments)
     }
 }
 
-void printData(double **array, int nRows, int nCols)
+void printData(double **array, int *nRows, int *nCols, int *clusters, int *k)
 {
-    int row, column;
-    for (row = 0; row < nRows; row++)
+    int row, column, cluster, clusterNumber;
+
+    for(cluster = 1; cluster <= *k; cluster++)
     {
-        for (column = 0; column < nCols; column++)
+        printf("============ Cluster %d ===========\n", cluster);
+        for (row = 0; row < *nRows; row++)
+        {
+            if(clusters[row] == cluster)
+            {
+                for (column = 0; column < *nCols; column++)
+                {
+                    printf("%lf ", array[row][column]);
+                }
+                printf("\n");
+            }
+        }        
+    }
+
+    printf("============ All Data =========\n");
+    for (row = 0; row < *nRows; row++)
+    {
+        for (column = 0; column < *nCols; column++)
         {
             printf("%lf ", array[row][column]);
         }
