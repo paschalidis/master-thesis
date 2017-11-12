@@ -5,7 +5,7 @@
 void initializeClusters(int *clusters, int *rows);
 void randomizeCenters(double *centers, int *k);
 
-int * run(double **pointers, int *rows, int dimensions, int *k)
+int * run(double **points, int *rows, int dimensions, int *k)
 {
     // one dimensional array to store the cluster of each data row
     int *clusters;
@@ -28,10 +28,35 @@ int * run(double **pointers, int *rows, int dimensions, int *k)
     // K-means steps
     // While you have change in clusters continue
     // calculate for each point Euclidean distance from centers
+        // for each row
+            // for each dimension
+                // for each center -- this can be seperate function
+                    // calculate the distance and find the min
+                    // set point to cluster
+                    // if cluster has change update flag
+
+    printf("============== Run all points of k-means =============\n");
+    int i,j;
+    for (i = 0; i < *rows; i++)
+    {
+        for (j = 0; j < dimensions; j++)
+        {
+           printf("%lf ", points[i][j]);
+        }
+        printf("\n");
+    }
+    printf("============== Ebd of Run all points of k-means =============\n");
+
     // and add them to nears cluster (min distance from center)
     // if point change cluster update the flag to continue run
+
     // When you add all points to relevant cluster then
     // calculate the average per cluster and set new centers
+        // for each cluster
+            // for each k --> the number of cluster
+                // calculate average 
+                // and update ne center
+
     // re run all steps until ther are no change to cluster
 
 
