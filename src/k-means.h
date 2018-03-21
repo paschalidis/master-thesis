@@ -24,7 +24,7 @@ void findMinMax(double **points, int const *rows, int const *dimensions, double 
  * @param max
  * @return
  */
-double random(double min, double max);
+double random(double const *min, double const *max);
 
 int * run(double **points, int const *rows, int *dimensions, int *k)
 {
@@ -155,11 +155,11 @@ void randomizeCenters(double **points, const int *rows, int const *dimensions, i
     {
         for(j = 0; j < *dimensions; j++)
         {
-            centers[i][j] = random(min_array[j], max_array[j]);
+            centers[i][j] = random(&min_array[j], &max_array[j]);
         }
     }
 
-    free(max_array);
+    free(min_array);
     free(max_array);
 }
 
@@ -187,7 +187,7 @@ void findMinMax(double **points, int const *rows, int const *dimensions, double 
     }
 }
 
-double random(double min, double max)
+double random(double const *min, double const *max)
 {
 
     double randomNumber, range , tempRan, finalRan;
@@ -195,7 +195,7 @@ double random(double min, double max)
     randomNumber = (double)rand() / (double)RAND_MAX;
     //total range number from min to max eg. from -2 to 2 is 4
     //range used it to pivot form -2 to 2 -> 0 to 4 for next step
-    range = fabs(min) + fabs(max);
+    range = fabs(*min) + fabs(*max);
     //illustrate randomNumber to range
     //lets say that rand() generate 0.5 number, that is the half
     //of 0.0 to 1.0, show multiple range with randomNumber we get the
@@ -203,7 +203,7 @@ double random(double min, double max)
     tempRan = randomNumber * range;
     //add the min to tempRan to get the correct random in ours range
     //so in ours example we have: 2 + (-2) = 0, that is the half in -2 to 2
-    finalRan = tempRan + min;
+    finalRan = tempRan + *min;
     return finalRan;
 }
 
