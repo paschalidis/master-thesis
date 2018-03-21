@@ -28,7 +28,7 @@ double random(double const *min, double const *max);
 
 int * run(double **points, int const *rows, int *dimensions, int *k)
 {
-    int i, j;
+    int i, j, cIndex;
 
     // one dimensional array to store the cluster of each data row
     int *clusters;
@@ -73,10 +73,7 @@ int * run(double **points, int const *rows, int *dimensions, int *k)
         printf("Center %d : ", i);
         for(j = 0; j < *dimensions; j++)
         {
-//            printf("Min in %i column is = %f \n", j, min_array[j]);
-//            printf("Max in %i column is = %f \n", j, max_array[j]);
             printf("%f, ", centers[i][j]);
-            //todo store to centers
         }
         printf("\n");
     }
@@ -97,15 +94,42 @@ int * run(double **points, int const *rows, int *dimensions, int *k)
                     // if cluster has change update flag
 
     printf("============== Run all points of k-means =============\n");
-
-    for (i = 0; i < *rows; i++)
-    {
-        for (j = 0; j < *dimensions; j++)
+//    for(cIndex = 0; cIndex < *k; cIndex ++)
+//    {
+        for (i = 0; i < *rows; i++)
         {
-           printf("%lf ", points[i][j]);
+            double min=0;
+            int clusrer=0;
+            for(cIndex = 0; cIndex < *k; cIndex ++) {
+                double sum = 0;
+                for (j = 0; j < *dimensions; j++) {
+                    printf("Pointer: ");
+                    printf("%lf ", points[i][j]);
+
+                    printf("\t center: %f", centers[cIndex][j]);
+
+                    printf("\n");
+                    double temp = points[i][j] - centers[cIndex][j];
+                    temp = temp * temp;
+                    sum = sum + temp;
+
+                }
+                double distanse = sqrt(sum);
+                if(min==0){
+                    min=distanse;
+                    clusrer=cIndex;
+                } else if(distanse < min){
+                    min=distanse;
+                    clusrer=cIndex;
+                }
+                printf("Centrt %d Distamse: %f \n",cIndex, distanse);
+            }
+            printf("min %f \n",min);
+            printf("cluster %d \n",clusrer+1);
+            clusters[i] = clusrer+1;
+            printf("\n");
         }
-        printf("\n");
-    }
+//    }
     printf("============== Ebd of Run all points of k-means =============\n");
 
     // and add them to nears cluster (min distance from center)
