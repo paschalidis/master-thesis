@@ -3,12 +3,15 @@
 
 #include "read_file.h"
 #include "k-means.h"
+#include "time.h"
 
 void argumentsValidator(int numberOfArguments);
 void printData(double **array, int *nRows, int *nCols, int *cluster, int *k);
 
 int main(int argc, const char *argv[])
 {
+    //used it to generate new number each time
+    srand( (unsigned int) time(NULL) );
     printf("MAin\n");
     argumentsValidator(argc);
 
