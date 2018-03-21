@@ -50,7 +50,7 @@ int main(int argc, const char *argv[])
     readFile(fileName, rowPointer);
 
     int *clusters;
-    clusters = run(rowPointer, &numberOfRows, numberOfColumns, &k);
+    clusters = run(rowPointer, &numberOfRows, &numberOfColumns, &k);
 
     // done: refactor print data to print per cluster and points
     printData(rowPointer, &numberOfRows, &numberOfColumns, clusters, &k);

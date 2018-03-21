@@ -5,8 +5,8 @@
 #include <math.h>
 
 //void fillData(int **array,  int nRow, int nCols);
-void initializeClusters(int *clusters, int *rows);
-void randomizeCenters(double **points, int *rows, int dimensions, int *k, double **centers);
+void initializeClusters(int *clusters, int const *rows);
+void randomizeCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers);
 
 /**
  *
@@ -16,7 +16,7 @@ void randomizeCenters(double **points, int *rows, int dimensions, int *k, double
  * @param min_array
  * @param max_array
  */
-void findMinMax(double **points, int const *rows, int dimensions, double *min_array, double *max_array);
+void findMinMax(double **points, int const *rows, int const *dimensions, double *min_array, double *max_array);
 
 /**
  *
@@ -26,7 +26,7 @@ void findMinMax(double **points, int const *rows, int dimensions, double *min_ar
  */
 double random(double min, double max);
 
-int * run(double **points, int *rows, int dimensions, int *k)
+int * run(double **points, int const *rows, int *dimensions, int *k)
 {
     int i, j;
 
@@ -47,7 +47,7 @@ int * run(double **points, int *rows, int dimensions, int *k)
     initializeClusters(clusters, rows);
 
     // allocate the memory for the center pointers
-    centerPointer = malloc(*k * dimensions * sizeof(double));
+    centerPointer = malloc(*k * *dimensions * sizeof(double));
     if (centerPointer == NULL)
     {
         printf("\nFailure to allocate room for the center pointers");
@@ -63,7 +63,7 @@ int * run(double **points, int *rows, int dimensions, int *k)
     // point the pointers
     for (i = 0; i < *k; i++)
     {
-        centers[i] = centerPointer + (i * dimensions);
+        centers[i] = centerPointer + (i * *dimensions);
     }
     randomizeCenters(points, rows, dimensions, k, centers);
 
@@ -71,7 +71,7 @@ int * run(double **points, int *rows, int dimensions, int *k)
     for(i = 0; i < *k; i++)
     {
         printf("Center %d : ", i);
-        for(j = 0; j < dimensions; j++)
+        for(j = 0; j < *dimensions; j++)
         {
 //            printf("Min in %i column is = %f \n", j, min_array[j]);
 //            printf("Max in %i column is = %f \n", j, max_array[j]);
@@ -100,7 +100,7 @@ int * run(double **points, int *rows, int dimensions, int *k)
 
     for (i = 0; i < *rows; i++)
     {
-        for (j = 0; j < dimensions; j++)
+        for (j = 0; j < *dimensions; j++)
         {
            printf("%lf ", points[i][j]);
         }
@@ -127,7 +127,7 @@ int * run(double **points, int *rows, int dimensions, int *k)
 /**
  * Set all clusters to zero value for first run
  */
-void initializeClusters(int *clusters, int *rows)
+void initializeClusters(int *clusters, int const *rows)
 {
     int i;
     for(i = 0; i < *rows; i++){
@@ -139,7 +139,7 @@ void initializeClusters(int *clusters, int *rows)
 /**
  * Randomize Centers of K-means for first run
  */
-void randomizeCenters(double **points, int *rows, int dimensions, int *k, double **centers)
+void randomizeCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers)
 {
     int i, j;
     // one dimensional array to store the min of each data column
@@ -147,27 +147,28 @@ void randomizeCenters(double **points, int *rows, int dimensions, int *k, double
     // one dimensional array to store the max of each data column
     double *max_array;
     // allocate memory for min and max arrays
-    min_array = malloc((dimensions) * sizeof(double));
-    max_array = malloc((dimensions) * sizeof(double));
+    min_array = malloc((*dimensions) * sizeof(double));
+    max_array = malloc((*dimensions) * sizeof(double));
     findMinMax(points, rows, dimensions, min_array, max_array);
 
     for(i = 0; i < *k; i++)
     {
-        for(j = 0; j < dimensions; j++)
+        for(j = 0; j < *dimensions; j++)
         {
             centers[i][j] = random(min_array[j], max_array[j]);
         }
     }
 
-    //todo free min maz
+    free(max_array);
+    free(max_array);
 }
 
-void findMinMax(double **points, int const *rows, int dimensions, double *min_array, double *max_array) {
+void findMinMax(double **points, int const *rows, int const *dimensions, double *min_array, double *max_array) {
     int i, j;
     double min, max;
 
     // Run array with points per column
-    for(j = 0; j < dimensions; j++){
+    for(j = 0; j < *dimensions; j++){
         //set first value as min and max
         min = points[0][j];
         max = points[0][j];
