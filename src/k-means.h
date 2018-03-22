@@ -267,6 +267,7 @@ void newCenters(double **points, const int *rows, int const *dimensions, int con
     {
         for(column = 0; column < *dimensions; column++)
         {
+            //todo check if cluster has data
             centers[cluster][column] = 0;
         }
     }
