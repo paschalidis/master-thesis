@@ -16,6 +16,10 @@ int main(int argc, const char *argv[])
     argumentsValidator(argc);
 
     int k = atoi(argv[1]);
+    if(k < 1){
+        printf("K must be bigger than 1\n");
+        exit(0);
+    }
     const char *fileName = argv[2];
 
     int numberOfRows, numberOfColumns;
@@ -62,7 +66,7 @@ int main(int argc, const char *argv[])
  */
 void argumentsValidator(int numberOfArguments)
 {
-    if (numberOfArguments < 3)
+    if (numberOfArguments != 3)
     {
         printf("Error on arguments\n");
         printf("Usage: ./main K filePath\n");

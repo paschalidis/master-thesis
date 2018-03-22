@@ -7,6 +7,7 @@
 //void fillData(int **array,  int nRow, int nCols);
 void initializeClusters(int *clusters, int const *rows);
 void randomizeCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers);
+void newCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers, int const *clusters);
 
 /**
  *
@@ -48,7 +49,7 @@ int * run(double **points, int const *rows, int *dimensions, int *k)
     int clusterChange;
 
     // K-means max allowed runs and counter for runs
-    int maxAllowedRuns = 1;
+    int maxAllowedRuns = 100;
     int currentRuns = 0;
 
     // allocate memory for clusters
@@ -91,10 +92,7 @@ int * run(double **points, int const *rows, int *dimensions, int *k)
         }
         printf("\n");
     }
-
     printf("============== End center =============\n");
-    // todo: Do Kmeans algortithms
-    // todo: function for evlikia apostasi
     // todo: average per cluster to calclulate new centros
     
     // K-means steps
@@ -152,10 +150,13 @@ int * run(double **points, int const *rows, int *dimensions, int *k)
         }
 
         //todo calculate new centers with average per cluster
-
+        if(clusterChange == 1){
+            newCenters(points, rows, dimensions, k, centers, clusters);
+        }
         currentRuns ++;
     }while (clusterChange == 1 && currentRuns < maxAllowedRuns);
 
+    printf("============== Total Runs of k-means %d =============\n", currentRuns);
     printf("============== Ebd of Run all points of k-means =============\n");
 
     // and add them to nears cluster (min distance from center)
@@ -255,5 +256,62 @@ double random(double const *min, double const *max)
     return finalRan;
 }
 
+void newCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers, int const *clusters)
+{
+    int row, column, cluster;
+
+    printf("============ New Centers ===========\n");
+
+    // Initialize all center points
+    for(cluster = 0; cluster < *k; cluster++)
+    {
+        for(column = 0; column < *dimensions; column++)
+        {
+            centers[cluster][column] = 0;
+        }
+    }
+
+    for(cluster = 0; cluster < *k; cluster++)
+    {
+        printf("============ Cluster %d ===========\n", cluster + 1);
+        int itemsFound = 0;
+        for (row = 0; row < *rows; row++)
+        {
+            if(clusters[row] == cluster)
+            {
+                itemsFound ++;
+                for (column = 0; column < *dimensions; column++)
+                {
+                    printf("%lf ", points[row][column]);
+                    // Calculate the sum per column
+                    centers[cluster][column] = centers[cluster][column] + points[row][column];
+                }
+                printf("\n");
+            }
+        }
+
+        // Average per column for new center points
+        for(column = 0; column < *dimensions; column++){
+            if(itemsFound > 0){
+                centers[cluster][column] = centers[cluster][column] / itemsFound;
+            }
+        }
+        printf("Items found in cluster %d : %d\n", cluster, itemsFound);
+        printf("\n");
+    }
+    printf("============== Start center =============\n");
+    for(cluster = 0; cluster < *k; cluster++)
+    {
+        printf("Center %d : ", cluster);
+        for(column = 0; column < *dimensions; column++)
+        {
+            printf("%f, ", centers[cluster][column]);
+        }
+        printf("\n");
+    }
+    printf("============== End center =============\n");
+
+    printf("============ End New Centers ===========\n");
+}
 
 //#endif
