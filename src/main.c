@@ -75,9 +75,9 @@ void printData(double **array, int *nRows, int *nCols, int *clusters, int *k)
 {
     int row, column, cluster, clusterNumber;
 
-    for(cluster = 1; cluster <= *k; cluster++)
+    for(cluster = 0; cluster < *k; cluster++)
     {
-        printf("============ Cluster %d ===========\n", cluster);
+        printf("============ Cluster %d ===========\n", cluster + 1);
         for (row = 0; row < *nRows; row++)
         {
             if(clusters[row] == cluster)
