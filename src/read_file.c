@@ -16,11 +16,11 @@ void readFile(const char *fileName, double **array)
 
     while ((line = fgets(buffer, sizeof(buffer), fstream)) != NULL)
     {
-        record = strtok(line, ",");
+        record = strtok(line, " ");
         while (record != NULL)
         {
             array[i][j++] = atof(record);
-            record = strtok(NULL, ",");
+            record = strtok(NULL, " ");
         }
         j = 0;
         i++;
@@ -44,10 +44,10 @@ void countRowsCols(const char *fileName, int *rows, int *cols)
 
     while ((line = fgets(buffer, sizeof(buffer), fstream)) != NULL)
     {
-        record = strtok(line, ",");
+        record = strtok(line, " ");
         while (record != NULL)
         {
-            record = strtok(NULL, ",");
+            record = strtok(NULL, " ");
             column++;
         }
         *cols = column;
