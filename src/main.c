@@ -15,6 +15,8 @@ int main(int argc, const char *argv[])
     printf("MAin\n");
     argumentsValidator(argc);
 
+    //todo make fillArguments function
+    const char *separator;
     int k = atoi(argv[1]);
     if(k < 1){
         printf("K must be bigger than 1\n");
@@ -26,7 +28,7 @@ int main(int argc, const char *argv[])
     double *arrayPointer;
     double **rowPointer;
 
-    countRowsCols(fileName, &numberOfRows, &numberOfColumns);
+    countRowsCols(fileName, &numberOfRows, &numberOfColumns, " ");
 
     printf("Rows: %d\nCols: %d\n", numberOfRows, numberOfColumns);
 
@@ -51,7 +53,7 @@ int main(int argc, const char *argv[])
         rowPointer[i] = arrayPointer + (i * numberOfColumns);
     }
 
-    readFile(fileName, rowPointer);
+    readFile(fileName, rowPointer, " ");
 
     int *clusters;
     clusters = run(rowPointer, &numberOfRows, &numberOfColumns, &k);
@@ -66,7 +68,7 @@ int main(int argc, const char *argv[])
  */
 void argumentsValidator(int numberOfArguments)
 {
-    if (numberOfArguments != 3)
+    if (numberOfArguments < 3)
     {
         printf("Error on arguments\n");
         printf("Usage: ./main K filePath\n");
