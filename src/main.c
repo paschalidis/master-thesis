@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "read_file.h"
+#include "file.h"
 #include "k-means.h"
 #include "time.h"
 
@@ -15,14 +15,12 @@
  * @param numberOfArguments
  */
 void argumentsValidator(int numberOfArguments);
-void printData(double **array, int *nRows, int *nCols, int *cluster, int *k);
 
 int main(int argc, const char *argv[])
 {
     //used it to generate new random number each time
     srand( (unsigned int) time(NULL) );
 
-    printf("Main\n");
     argumentsValidator(argc);
 
     // Fill arguments to variables
@@ -43,7 +41,7 @@ int main(int argc, const char *argv[])
 
     countRowsCols(fileName, &numberOfRows, &numberOfColumns, separator);
 
-    printf("Rows: %d\nCols: %d\n", numberOfRows, numberOfColumns);
+    printf("Rows: %d\tCols: %d\n", numberOfRows, numberOfColumns);
 
     // allocate the memory for the array
     arrayPointer = malloc(numberOfRows * numberOfColumns * sizeof(double));
@@ -70,8 +68,7 @@ int main(int argc, const char *argv[])
     int *clusters;
     clusters = run(rowPointer, &numberOfRows, &numberOfColumns, &k);
 
-    // done: refactor print data to print per cluster and points
-    printData(rowPointer, &numberOfRows, &numberOfColumns, clusters, &k);
+    writeResults(rowPointer, &numberOfRows, &numberOfColumns, clusters, &k);
     return 0;
 }
 
@@ -83,37 +80,5 @@ void argumentsValidator(int numberOfArguments)
         printf("Usage: ./main K filePath\n");
         printf("Example: ./main 3 data/sample.csv\n");
         exit(0);
-    }
-}
-
-
-void printData(double **array, int *nRows, int *nCols, int *clusters, int *k)
-{
-    int row, column, cluster, clusterNumber;
-
-    for(cluster = 0; cluster < *k; cluster++)
-    {
-        printf("============ Cluster %d ===========\n", cluster + 1);
-        for (row = 0; row < *nRows; row++)
-        {
-            if(clusters[row] == cluster)
-            {
-                for (column = 0; column < *nCols; column++)
-                {
-                    printf("%lf ", array[row][column]);
-                }
-                printf("\n");
-            }
-        }        
-    }
-
-    printf("============ All Data =========\n");
-    for (row = 0; row < *nRows; row++)
-    {
-        for (column = 0; column < *nCols; column++)
-        {
-            printf("%lf ", array[row][column]);
-        }
-        printf("\n");
     }
 }
