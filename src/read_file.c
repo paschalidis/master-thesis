@@ -55,3 +55,21 @@ void countRowsCols(const char *fileName, int *rows, int *cols, const char *separ
     *rows = row;
     fclose(fstream);
 }
+
+void writeResults()
+{
+    FILE *fp;
+
+    fp = fopen("test.txt", "w");
+
+    if(fp == NULL)
+    {
+        printf("\n file to write results opening failed ");
+        exit(0);
+    }
+
+    fputs("Test data from file.c\n", fp);
+    fputs("New line\n", fp);
+
+    fclose(fp);
+}
