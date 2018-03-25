@@ -234,7 +234,7 @@ double random(double const *min, double const *max)
     randomNumber = (double)rand() / (double)RAND_MAX;
     //total range number from min to max eg. from -2 to 2 is 4
     //range used it to pivot form -2 to 2 -> 0 to 4 for next step
-    range = fabs(*min) + fabs(*max);
+    range = *max - *min;
     //illustrate randomNumber to range
     //lets say that rand() generate 0.5 number, that is the half
     //of 0.0 to 1.0, show multiple range with randomNumber we get the
