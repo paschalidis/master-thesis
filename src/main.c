@@ -5,30 +5,43 @@
 #include "k-means.h"
 #include "time.h"
 
+#define DEFAULT_SEPARATOR " "
+#define K_ARGUMENT_INDEX 1
+#define FILE_NAME_ARGUMENT_INDEX 2
+#define SEPARATOR_ARGUMENT_INDEX 3
+
+/**
+ * Check arguments pass it from command line for execution
+ * @param numberOfArguments
+ */
 void argumentsValidator(int numberOfArguments);
 void printData(double **array, int *nRows, int *nCols, int *cluster, int *k);
 
 int main(int argc, const char *argv[])
 {
-    //used it to generate new number each time
+    //used it to generate new random number each time
     srand( (unsigned int) time(NULL) );
-    printf("MAin\n");
+
+    printf("Main\n");
     argumentsValidator(argc);
 
-    //todo make fillArguments function
-    const char *separator;
-    int k = atoi(argv[1]);
+    // Fill arguments to variables
+    int k = atoi(argv[K_ARGUMENT_INDEX]);
     if(k < 1){
         printf("K must be bigger than 1\n");
         exit(0);
     }
-    const char *fileName = argv[2];
+    const char *fileName = argv[FILE_NAME_ARGUMENT_INDEX];
+    const char *separator = argv[SEPARATOR_ARGUMENT_INDEX];
+    if(separator == NULL){
+        separator = DEFAULT_SEPARATOR;
+    }
 
     int numberOfRows, numberOfColumns;
     double *arrayPointer;
     double **rowPointer;
 
-    countRowsCols(fileName, &numberOfRows, &numberOfColumns, " ");
+    countRowsCols(fileName, &numberOfRows, &numberOfColumns, separator);
 
     printf("Rows: %d\nCols: %d\n", numberOfRows, numberOfColumns);
 
@@ -47,13 +60,12 @@ int main(int argc, const char *argv[])
         exit(0);
     }
     // point the pointers
-    int i;
-    for (i = 0; i < numberOfRows; i++)
+    for (int i = 0; i < numberOfRows; i++)
     {
         rowPointer[i] = arrayPointer + (i * numberOfColumns);
     }
 
-    readFile(fileName, rowPointer, " ");
+    readFile(fileName, rowPointer, separator);
 
     int *clusters;
     clusters = run(rowPointer, &numberOfRows, &numberOfColumns, &k);
@@ -63,9 +75,6 @@ int main(int argc, const char *argv[])
     return 0;
 }
 
-/**
- * Validate the number of arguments 
- */
 void argumentsValidator(int numberOfArguments)
 {
     if (numberOfArguments < 3)
@@ -76,6 +85,7 @@ void argumentsValidator(int numberOfArguments)
         exit(0);
     }
 }
+
 
 void printData(double **array, int *nRows, int *nCols, int *clusters, int *k)
 {

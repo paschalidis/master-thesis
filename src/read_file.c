@@ -2,7 +2,6 @@
 
 void readFile(const char *fileName, double **array, const char *separator)
 {
-    //todo can be set to null to dynamic buff
     char buffer[1024];
     char *record, *line;
     int i = 0, j = 0;
@@ -26,7 +25,6 @@ void readFile(const char *fileName, double **array, const char *separator)
         i++;
     }
     fclose(fstream);
-    //todo free buffer
 }
 
 void countRowsCols(const char *fileName, int *rows, int *cols, const char *separator)
