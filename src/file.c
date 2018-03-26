@@ -60,7 +60,7 @@ void writeResults(double **array, int const *nRows, int const *nCols, int const 
 {
     FILE *fp;
 
-    fp = fopen("test.txt", "w");
+    fp = fopen("results.txt", "w");
 
     if(fp == NULL)
     {

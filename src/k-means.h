@@ -4,27 +4,10 @@
 
 #include <math.h>
 
-//void fillData(int **array,  int nRow, int nCols);
 void initializeClusters(int *clusters, int const *rows);
 void randomizeCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers);
 void newCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers, int const *clusters);
-
-/**
- *
- * @param points
- * @param rows
- * @param dimensions
- * @param min_array
- * @param max_array
- */
 void findMinMax(double **points, int const *rows, int const *dimensions, double *min_array, double *max_array);
-
-/**
- *
- * @param min
- * @param max
- * @return
- */
 double random(double const *min, double const *max);
 
 int * run(double **points, int const *rows, int *dimensions, int *k)
@@ -134,7 +117,6 @@ int * run(double **points, int const *rows, int *dimensions, int *k)
             }
             printf("min distance is %f Pointer: %d set to Cluster %d\n", minDistance, i, cluster + 1);
             if(clusters[i] != cluster){
-                clusters[i] = cluster;
                 clusterChange = 1;
             }
             clusters[i] = cluster;
@@ -226,7 +208,6 @@ void findMinMax(double **points, int const *rows, int const *dimensions, double 
     }
 }
 
-//todo nees refactor in case of range 2 to 3 and -2 to -3
 double random(double const *min, double const *max)
 {
     double randomNumber, range , tempRan, finalRan;
