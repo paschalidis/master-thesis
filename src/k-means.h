@@ -208,6 +208,7 @@ void findMinMax(double **points, int const *rows, int const *dimensions, double 
     }
 }
 
+//todo get random from points k difrence
 double random(double const *min, double const *max)
 {
     double randomNumber, range , tempRan, finalRan;

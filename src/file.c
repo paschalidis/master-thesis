@@ -56,6 +56,7 @@ void countRowsCols(const char *fileName, int *rows, int *cols, const char *separ
     fclose(fstream);
 }
 
+//todo send each cluster to separate file and centers with atkina(max - distance)
 void writeResults(double **array, int const *nRows, int const *nCols, int const *clusters, int const *k)
 {
     FILE *fp;
