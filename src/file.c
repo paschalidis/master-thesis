@@ -59,21 +59,23 @@ void countRowsCols(const char *fileName, int *rows, int *cols, const char *separ
 //todo send each cluster to separate file and centers with atkina(max - distance)
 void writeResults(double **array, int const *nRows, int const *nCols, int const *clusters, int const *k)
 {
-    FILE *fp;
-
-    fp = fopen("results.txt", "w");
-
-    if(fp == NULL)
-    {
-        printf("\n file to write results opening failed ");
-        exit(0);
-    }
-
+    char clusterStr[9] = "cluster_";
+    char fileName[10], clusterNumber[2];
     int row, column, cluster;
 
     for(cluster = 0; cluster < *k; cluster++)
     {
-        fprintf(fp, "============ Cluster %d ===========\n", cluster + 1);
+        itoa(cluster + 1, clusterNumber, 10);
+        strcpy(fileName, clusterStr);
+        strcat(fileName, clusterNumber);
+        FILE *fp;
+        fp = fopen(fileName, "w");
+        if(fp == NULL){
+            printf("\n file to write results opening failed ");
+            exit(0);
+        }
+
+        //fprintf(fp, "============ Cluster %d ===========\n", cluster + 1);
         for (row = 0; row < *nRows; row++)
         {
             if(clusters[row] == cluster)
@@ -85,7 +87,6 @@ void writeResults(double **array, int const *nRows, int const *nCols, int const 
                 fprintf(fp, "\n");
             }
         }
+        fclose(fp);
     }
-
-    fclose(fp);
 }
