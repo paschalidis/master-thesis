@@ -68,7 +68,7 @@ int * run(double **points, int const *rows, int *dimensions, int *k, double **ce
     do{
         clusterChange = 0;
         for (i = 0; i < *rows; i++) {
-            minDistance = 0;
+            minDistance = -1;
             cluster = 0;
             for (centerIndex = 0; centerIndex < *k; centerIndex++) {
                 sumDistance = 0;
@@ -83,10 +83,7 @@ int * run(double **points, int const *rows, int *dimensions, int *k, double **ce
                 }
                 euclideanDistance = sqrt(sumDistance);
                 // Set first distance as min distance
-                if (minDistance == 0) {
-                    minDistance = euclideanDistance;
-                    cluster = centerIndex;
-                } else if (euclideanDistance < minDistance) {
+                if (minDistance == -1 || euclideanDistance < minDistance) {
                     minDistance = euclideanDistance;
                     cluster = centerIndex;
                 }
@@ -128,8 +125,7 @@ int * run(double **points, int const *rows, int *dimensions, int *k, double **ce
  */
 void initializeClusters(int *clusters, int const *rows)
 {
-    int i;
-    for(i = 0; i < *rows; i++){
+    for(int i = 0; i < *rows; i++){
         clusters[i] = 0;
     }
 }

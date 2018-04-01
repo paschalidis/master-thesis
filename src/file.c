@@ -63,6 +63,7 @@ void writeResults(double **array, int const *nRows, int const *nCols, int const 
     char fileName[10], clusterNumber[2];
     int row, column, cluster;
 
+    // Clusters
     for(cluster = 0; cluster < *k; cluster++)
     {
         itoa(cluster + 1, clusterNumber, 10);
@@ -90,6 +91,7 @@ void writeResults(double **array, int const *nRows, int const *nCols, int const 
         fclose(fp);
     }
 
+    // Centers
     FILE *fp;
     fp = fopen("centers", "w");
     if(fp == NULL){
@@ -101,7 +103,7 @@ void writeResults(double **array, int const *nRows, int const *nCols, int const 
     {
         for (column = 0; column < *nCols; column++)
         {
-            fprintf(fp, "%lf ", array[i][column]);
+            fprintf(fp, "%lf ", centers[i][column]);
         }
         fprintf(fp, "\n");
     }
