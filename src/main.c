@@ -63,12 +63,36 @@ int main(int argc, const char *argv[])
         rowPointer[i] = arrayPointer + (i * numberOfColumns);
     }
 
+    // centers of k-means
+    double *centerPointer;
+    double **centers;
+
+    // allocate the memory for the center pointers
+    centerPointer = malloc(k * numberOfColumns * sizeof(double));
+    if (centerPointer == NULL)
+    {
+        printf("\nFailure to allocate room for the center pointers");
+        exit(0);
+    }
+    // allocate room for the pointers to the rows
+    centers = malloc(k * sizeof(double *));
+    if (centers == NULL)
+    {
+        printf("\nFailure to allocate room for pointers");
+        exit(0);
+    }
+    // point the pointers
+    for (int i = 0; i < k; i++)
+    {
+        centers[i] = centerPointer + (i * numberOfColumns);
+    }
+
     readFile(fileName, rowPointer, separator);
 
     int *clusters;
-    clusters = run(rowPointer, &numberOfRows, &numberOfColumns, &k);
+    clusters = run(rowPointer, &numberOfRows, &numberOfColumns, &k, centers);
 
-    writeResults(rowPointer, &numberOfRows, &numberOfColumns, clusters, &k);
+    writeResults(rowPointer, &numberOfRows, &numberOfColumns, clusters, &k, centers);
     return 0;
 }
 

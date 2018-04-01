@@ -57,7 +57,7 @@ void countRowsCols(const char *fileName, int *rows, int *cols, const char *separ
 }
 
 //todo send each cluster to separate file and centers with atkina(max - distance)
-void writeResults(double **array, int const *nRows, int const *nCols, int const *clusters, int const *k)
+void writeResults(double **array, int const *nRows, int const *nCols, int const *clusters, int const *k, double **centers)
 {
     char clusterStr[9] = "cluster_";
     char fileName[10], clusterNumber[2];
@@ -89,4 +89,21 @@ void writeResults(double **array, int const *nRows, int const *nCols, int const 
         }
         fclose(fp);
     }
+
+    FILE *fp;
+    fp = fopen("centers", "w");
+    if(fp == NULL){
+        printf("\n file to write centers opening failed ");
+        exit(0);
+    }
+
+    for(int i = 0; i < *k; i++)
+    {
+        for (column = 0; column < *nCols; column++)
+        {
+            fprintf(fp, "%lf ", array[i][column]);
+        }
+        fprintf(fp, "\n");
+    }
+    fclose(fp);
 }

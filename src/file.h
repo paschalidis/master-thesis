@@ -25,6 +25,6 @@ void readFile(const char *fileName, double **array, const char *separator);
  */
 void countRowsCols(const char *fileName, int *rows, int *cols, const char *separator);
 
-void writeResults(double **array, int const *nRows, int const *nCols, int const *clusters, int const *k);
+void writeResults(double **array, int const *nRows, int const *nCols, int const *clusters, int const *k, double **centers);
 
 #endif

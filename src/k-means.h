@@ -10,17 +10,13 @@ void newCenters(double **points, const int *rows, int const *dimensions, int con
 void findMinMax(double **points, int const *rows, int const *dimensions, double *min_array, double *max_array);
 double random(double const *min, double const *max);
 
-int * run(double **points, int const *rows, int *dimensions, int *k)
+int * run(double **points, int const *rows, int *dimensions, int *k, double **centers)
 {
     // indexes of row, dimension, center(k)
     int i, j, centerIndex;
 
     // one dimensional array to store the cluster of each data row
     int *clusters;
-
-    // centers of k-means
-    double *centerPointer;
-    double **centers;
 
     // Distance values used to calculate Euclidean Distance
     double minDistance, sumDistance, euclideanDistance, pointDistance;
@@ -44,25 +40,6 @@ int * run(double **points, int const *rows, int *dimensions, int *k)
     }
     initializeClusters(clusters, rows);
 
-    // allocate the memory for the center pointers
-    centerPointer = malloc(*k * *dimensions * sizeof(double));
-    if (centerPointer == NULL)
-    {
-        printf("\nFailure to allocate room for the center pointers");
-        exit(0);
-    }
-    // allocate room for the pointers to the rows
-    centers = malloc(*k * sizeof(double *));
-    if (centers == NULL)
-    {
-        printf("\nFailure to allocate room for pointers");
-        exit(0);
-    }
-    // point the pointers
-    for (i = 0; i < *k; i++)
-    {
-        centers[i] = centerPointer + (i * *dimensions);
-    }
     randomizeCenters(points, rows, dimensions, k, centers);
 
     printf("============== Initialize Centers =============\n");
