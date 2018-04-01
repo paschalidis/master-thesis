@@ -10,6 +10,9 @@ void newCenters(double **points, const int *rows, int const *dimensions, int con
 void findMinMax(double **points, int const *rows, int const *dimensions, double *min_array, double *max_array);
 double random(double const *min, double const *max);
 
+//todo return radius for each center(max distance)
+void radius();
+
 int * run(double **points, int const *rows, int *dimensions, int *k, double **centers)
 {
     // indexes of row, dimension, center(k)

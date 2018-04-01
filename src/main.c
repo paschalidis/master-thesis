@@ -39,6 +39,10 @@ int main(int argc, const char *argv[])
     double *arrayPointer;
     double **rowPointer;
 
+    // centers of k-means
+    double *centerPointer;
+    double **centers;
+
     countRowsCols(fileName, &numberOfRows, &numberOfColumns, separator);
 
     printf("Rows: %d\tCols: %d\n", numberOfRows, numberOfColumns);
@@ -63,10 +67,6 @@ int main(int argc, const char *argv[])
         rowPointer[i] = arrayPointer + (i * numberOfColumns);
     }
 
-    // centers of k-means
-    double *centerPointer;
-    double **centers;
-
     // allocate the memory for the center pointers
     centerPointer = malloc(k * numberOfColumns * sizeof(double));
     if (centerPointer == NULL)
@@ -74,14 +74,14 @@ int main(int argc, const char *argv[])
         printf("\nFailure to allocate room for the center pointers");
         exit(0);
     }
-    // allocate room for the pointers to the rows
+    // allocate room for the pointers to the centers
     centers = malloc(k * sizeof(double *));
     if (centers == NULL)
     {
         printf("\nFailure to allocate room for pointers");
         exit(0);
     }
-    // point the pointers
+    // point the pointers for centers
     for (int i = 0; i < k; i++)
     {
         centers[i] = centerPointer + (i * numberOfColumns);
@@ -92,7 +92,9 @@ int main(int argc, const char *argv[])
     int *clusters;
     clusters = run(rowPointer, &numberOfRows, &numberOfColumns, &k, centers);
 
-    writeResults(rowPointer, &numberOfRows, &numberOfColumns, clusters, &k, centers);
+    writeClusters(rowPointer, &numberOfRows, &numberOfColumns, clusters, &k);
+    writeCenters(&numberOfColumns, &k, centers);
+
     return 0;
 }
 
