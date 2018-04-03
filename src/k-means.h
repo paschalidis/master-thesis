@@ -11,7 +11,7 @@ void findMinMax(double **points, int const *rows, int const *dimensions, double 
 double random(double const *min, double const *max);
 
 //todo return radius for each center(max distance)
-void radius();
+double * radius(int const *k, double **points, double **centers, int const *clusters, const int *rows, const int *dimensions);
 
 int * run(double **points, int const *rows, int *dimensions, int *k, double **centers)
 {
@@ -262,4 +262,46 @@ void newCenters(double **points, const int *rows, int const *dimensions, int con
     printf("============ End New Centers ===========\n");
 }
 
+double * radius(int const *k, double **points, double **centers, int const *clusters, const int *rows, const int *dimensions)
+{
+    double maxDistance;
+    double *radius;
+
+    // allocate memory for clusters
+    radius = malloc((*k) * sizeof(double));
+    if (radius== NULL)
+    {
+        printf("\nFailure to allocate room for the clusters");
+        exit(0);
+    }
+
+    double pointDistance = 0;
+    double sumDistance, euclideanDistance;
+    for(int centerIndex = 0; centerIndex < *k; centerIndex++){
+        maxDistance = -1;
+        for(int clusterIndex = 0; clusterIndex < *rows; clusterIndex++)
+        {
+            if(clusters[clusterIndex] == centerIndex)
+            {
+                sumDistance = 0;
+                for(int dimension = 0; dimension < *dimensions; dimension++)
+                {
+                    // Point distance from center
+                    pointDistance = points[clusterIndex][dimension] - centers[centerIndex][dimension];
+                    // Power of pointDistance used to calculate Euclidean Distance
+                    pointDistance = pointDistance * pointDistance;
+                    // Add to sum
+                    sumDistance = sumDistance + pointDistance;
+                }
+                euclideanDistance = sqrt(sumDistance);
+                // Set first distance as min distance
+                if (euclideanDistance > maxDistance) {
+                    maxDistance = euclideanDistance;
+                }
+            }
+        }
+        radius[centerIndex] = maxDistance;
+    }
+    return radius;
+}
 //#endif

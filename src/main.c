@@ -92,8 +92,11 @@ int main(int argc, const char *argv[])
     int *clusters;
     clusters = run(rowPointer, &numberOfRows, &numberOfColumns, &k, centers);
 
+    double *centerRadius;
+    centerRadius = radius(&k, rowPointer, centers, clusters, &numberOfRows, &numberOfColumns);
+
     writeClusters(rowPointer, &numberOfRows, &numberOfColumns, clusters, &k);
-    writeCenters(&numberOfColumns, &k, centers);
+    writeCenters(&numberOfColumns, &k, centers, centerRadius);
 
     return 0;
 }

@@ -36,5 +36,5 @@ void countRowsCols(const char *fileName, int *rows, int *cols, const char *separ
  */
 void writeClusters(double **array, int const *nRows, int const *nCols, int const *clusters, int const *k);
 
-void writeCenters(int const *nCols, int const *k, double **centers);
+void writeCenters(int const *nCols, int const *k, double **centers, double *centerRadius);
 #endif

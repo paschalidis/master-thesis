@@ -77,8 +77,7 @@ void writeClusters(double **array, int const *nRows, int const *nCols, int const
     }
 }
 
-//todo write radius for each center(max distance)
-void writeCenters(int const *nCols, int const *k, double **centers) {
+void writeCenters(int const *nCols, int const *k, double **centers, double *centerRadius) {
 
     // Centers
     FILE *fp;
@@ -89,6 +88,7 @@ void writeCenters(int const *nCols, int const *k, double **centers) {
     }
 
     for (int i = 0; i < *k; i++) {
+            fprintf(fp, "Center %d Radius: %lf \n", i + 1, centerRadius[i]);
         for (int column = 0; column < *nCols; column++) {
             fprintf(fp, "%lf ", centers[i][column]);
         }
