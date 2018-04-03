@@ -35,6 +35,7 @@ int main(int argc, const char *argv[])
         separator = DEFAULT_SEPARATOR;
     }
 
+    // Points
     int numberOfRows, numberOfColumns;
     double *arrayPointer;
     double **rowPointer;
@@ -42,6 +43,10 @@ int main(int argc, const char *argv[])
     // centers of k-means
     double *centerPointer;
     double **centers;
+
+    // Results
+    int *clusters;
+    double *centerRadius;
 
     countRowsCols(fileName, &numberOfRows, &numberOfColumns, separator);
 
@@ -89,10 +94,7 @@ int main(int argc, const char *argv[])
 
     readFile(fileName, rowPointer, separator);
 
-    int *clusters;
     clusters = run(rowPointer, &numberOfRows, &numberOfColumns, &k, centers);
-
-    double *centerRadius;
     centerRadius = radius(&k, rowPointer, centers, clusters, &numberOfRows, &numberOfColumns);
 
     writeClusters(rowPointer, &numberOfRows, &numberOfColumns, clusters, &k);
