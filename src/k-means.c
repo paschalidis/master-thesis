@@ -32,26 +32,6 @@ void randomizeCenters(double **points, const int *rows, int const *dimensions, i
 void newCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers,
                 int const *clusters);
 
-/**
- * Find mix and max point
- *
- * @param points
- * @param rows
- * @param dimensions
- * @param min_array
- * @param max_array
- */
-void findMinMax(double **points, int const *rows, int const *dimensions, double *min_array, double *max_array);
-
-/**
- * Random double with range
- *
- * @param min
- * @param max
- * @return
- */
-double random(double const *min, double const *max);
-
 int *run(double **points, int const *rows, int *dimensions, int *k, double **centers) {
     // indexes of row, dimension, center(k)
     int i, j, centerIndex;
@@ -165,67 +145,41 @@ void initializeClusters(int *clusters, int const *rows) {
 }
 
 void randomizeCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers) {
-    int i, j;
-    // one dimensional array to store the min of each data column
-    double *min_array;
-    // one dimensional array to store the max of each data column
-    double *max_array;
-    // allocate memory for min and max arrays
-    min_array = malloc((*dimensions) * sizeof(double));
-    max_array = malloc((*dimensions) * sizeof(double));
-    findMinMax(points, rows, dimensions, min_array, max_array);
 
-    for (i = 0; i < *k; i++) {
-        for (j = 0; j < *dimensions; j++) {
-            centers[i][j] = random(&min_array[j], &max_array[j]);
+    int *randomNumbers;
+    int i,j, pointIndex, randomNumber, found;
+
+    // allocate memory for random numbers
+    randomNumbers = malloc((*k) * sizeof(int));
+
+    // Make difference random numbers
+    for(i = 0; i < *k; i++)
+    {
+        do{
+            found = 0;
+            randomNumber = rand() % *rows;
+            // Search if random number exists
+            for(j = 0; j < *k; j++){
+                if(randomNumbers[j] == randomNumber){
+                    found = 1;
+                }
+            }
+        }while (found == 1);
+
+        randomNumbers[i] = randomNumber;
+    }
+
+    // Store points to centers
+    for(i = 0; i < *k; i++)
+    {
+        for(j = 0; j < *dimensions; j++)
+        {
+            pointIndex = randomNumbers[i];
+            centers[i][j] = points[pointIndex][j];
         }
     }
 
-    free(min_array);
-    free(max_array);
-}
-
-void findMinMax(double **points, int const *rows, int const *dimensions, double *min_array, double *max_array) {
-    int i, j;
-    double min, max;
-
-    // Run array with points per column
-    for (j = 0; j < *dimensions; j++) {
-        //set first value as min and max
-        min = points[0][j];
-        max = points[0][j];
-        for (i = 0; i < *rows; i++) {
-            if (points[i][j] > max) {
-                max = points[i][j];
-            }
-
-            if (points[i][j] < min) {
-                min = points[i][j];
-            }
-        }
-        //store min and max to array
-        min_array[j] = min;
-        max_array[j] = max;
-    }
-}
-
-//todo get random from points k difrence
-double random(double const *min, double const *max) {
-    double randomNumber, range, tempRan, finalRan;
-    //generate random number form 0.0 to 1.0
-    randomNumber = (double) rand() / (double) RAND_MAX;
-    //total range number from min to max eg. from -2 to 2 is 4
-    //range used it to pivot form -2 to 2 -> 0 to 4 for next step
-    range = *max - *min;
-    //illustrate randomNumber to range
-    //lets say that rand() generate 0.5 number, that is the half
-    //of 0.0 to 1.0, show multiple range with randomNumber we get the
-    //half in range. eg 4 * 0.5 = 2
-    tempRan = randomNumber * range;
-    //add the min to tempRan to get the correct random in ours range
-    //so in ours example we have: 2 + (-2) = 0, that is the half in -2 to 2
-    finalRan = tempRan + *min;
-    return finalRan;
+    free(randomNumbers);
 }
 
 void newCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers,
