@@ -283,7 +283,7 @@ double *radius(int const *k, double **points, double **centers, int const *clust
     double maxDistance;
     double *radius;
 
-    // allocate memory for clusters
+    // allocate memory for radius
     radius = malloc((*k) * sizeof(double));
     if (radius == NULL) {
         printf("\nFailure to allocate room for the clusters");
@@ -304,15 +304,15 @@ double *radius(int const *k, double **points, double **centers, int const *clust
                     pointDistance = pointDistance * pointDistance;
                     // Add to sum
                     sumDistance = sumDistance + pointDistance;
-                }
+                }// for dimensions
                 euclideanDistance = sqrt(sumDistance);
-                // Set first distance as min distance
+                // Set max distance
                 if (euclideanDistance > maxDistance) {
                     maxDistance = euclideanDistance;
                 }
             }
-        }
+        }// for clusters
         radius[centerIndex] = maxDistance;
-    }
+    } // for k
     return radius;
 }
