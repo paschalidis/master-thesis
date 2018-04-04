@@ -16,6 +16,13 @@
  */
 void argumentsValidator(int numberOfArguments);
 
+/**
+ * Validate K number
+ * @param k
+ * @param numberOfRows
+ */
+void validateK(int const *k, int const *numberOfRows);
+
 int main(int argc, const char *argv[])
 {
     //used it to generate new random number each time
@@ -24,11 +31,7 @@ int main(int argc, const char *argv[])
     argumentsValidator(argc);
 
     // Fill arguments to variables
-    int k = atoi(argv[K_ARGUMENT_INDEX]);
-    if(k < 1){
-        printf("K must be bigger than 1\n");
-        exit(0);
-    }
+    const int k = atoi(argv[K_ARGUMENT_INDEX]);
     const char *fileName = argv[FILE_NAME_ARGUMENT_INDEX];
     const char *separator = argv[SEPARATOR_ARGUMENT_INDEX];
     if(separator == NULL){
@@ -50,6 +53,7 @@ int main(int argc, const char *argv[])
 
     countRowsCols(fileName, &numberOfRows, &numberOfColumns, separator);
 
+    validateK(&k, &numberOfRows);
     printf("Rows: %d\tCols: %d\n", numberOfRows, numberOfColumns);
 
     // allocate the memory for the array
@@ -110,6 +114,18 @@ void argumentsValidator(int numberOfArguments)
         printf("Error on arguments\n");
         printf("Usage: ./main K filePath\n");
         printf("Example: ./main 3 data/sample.csv\n");
+        exit(0);
+    }
+}
+
+void validateK(int const *k, int const *numberOfRows)
+{
+    if(*k < 1){
+        printf("K must be bigger than 1\n");
+        exit(0);
+    }
+    if(*k >= *numberOfRows){
+        printf("K must be lower than items: %d \n", *numberOfRows);
         exit(0);
     }
 }
