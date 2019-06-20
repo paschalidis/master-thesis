@@ -11,4 +11,4 @@ Increase the performance of k-means using distributed and multi-core programming
 ### Abstract
 The purpose of this project is to explain the problem of getting information from big data and addressing it with algorithm optimization techniques
 
-**Keywords:** k-means, MPI, CUDA
+**Keywords:** k-means, OpenMp
