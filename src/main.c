@@ -54,7 +54,6 @@ int main(int argc, const char *argv[])
     countRowsCols(fileName, &numberOfRows, &numberOfColumns, separator);
 
     validateK(&k, &numberOfRows);
-    printf("Rows: %d\tCols: %d\n", numberOfRows, numberOfColumns);
 
     // allocate the memory for the array
     arrayPointer = malloc(numberOfRows * numberOfColumns * sizeof(double));
@@ -112,14 +111,8 @@ int main(int argc, const char *argv[])
 
     clusters = run(rowPointer, &numberOfRows, &numberOfColumns, &k, centers, centerRadius);
 
-    for(int i = 0; i < k; i++){
-        printf("\nCenter centerRadius\n");
-        printf("Radius of Center %d is %f\n",i, centerRadius[i]);
-    }
-
-
-    writeClusters(rowPointer, &numberOfRows, &numberOfColumns, clusters, &k);
     writeCenters(&numberOfColumns, &k, centers, centerRadius);
+    writeClusters(rowPointer, &numberOfRows, &numberOfColumns, clusters, &k);
 
     return 0;
 }

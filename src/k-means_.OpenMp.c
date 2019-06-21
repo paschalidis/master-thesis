@@ -59,7 +59,6 @@ int *run(double **points, int const *rows, int *dimensions, int const *k, double
         printf("\nFailure to allocate room for the clusters");
         exit(0);
     }
-
     initializeClusters(clusters, rows);
 
     randomizeCenters(points, rows, dimensions, k, centers);
@@ -81,14 +80,15 @@ int *run(double **points, int const *rows, int *dimensions, int const *k, double
             cluster = 0;
             for (centerIndex = 0; centerIndex < *k; centerIndex++) {
                 sumDistance = 0;
+                # pragma omp parallel for reduction(+:sumDistance)
                 for (j = 0; j < *dimensions; j++) {
                     // Point distance from center
                     pointDistance = points[i][j] - centers[centerIndex][j];
                     // Power of pointDistance used to calculate Euclidean Distance
                     pointDistance = pointDistance * pointDistance;
                     // Add to sum
-                    sumDistance = sumDistance + pointDistance;
-
+                    //sumDistance = sumDistance + pointDistance;
+                    sumDistance += pointDistance;
                 }
                 euclideanDistance = sqrt(sumDistance);
                 // Set first distance as min distance
@@ -118,7 +118,6 @@ int *run(double **points, int const *rows, int *dimensions, int const *k, double
 
     // and add them to nears cluster (min distance from center)
     // if point change cluster update the flag to continue run
-
     // When you add all points to relevant cluster then
     // calculate the average per cluster and set new centers
     // for each cluster
@@ -131,8 +130,12 @@ int *run(double **points, int const *rows, int *dimensions, int const *k, double
 }
 
 void initializeClusters(int *clusters, int const *rows) {
-    for (int i = 0; i < *rows; i++) {
-        clusters[i] = 0;
+    # pragma omp parallel
+    {
+        # pragma omp for
+        for (int i = 0; i < *rows; i++) {
+            clusters[i] = 0;
+        }
     }
 }
 
@@ -151,9 +154,13 @@ void randomizeCenters(double **points, const int *rows, int const *dimensions, i
             found = 0;
             randomNumber = rand() % *rows;
             // Search if random number exists
-            for(j = 0; j < *k; j++){
-                if(randomNumbers[j] == randomNumber){
-                    found = 1;
+            # pragma omp parallel
+            {
+                # pragma omp for
+                for (j = 0; j < *k; j++) {
+                    if (randomNumbers[j] == randomNumber) {
+                        found = 1;
+                    }
                 }
             }
         }while (found == 1);
@@ -164,10 +171,13 @@ void randomizeCenters(double **points, const int *rows, int const *dimensions, i
     // Store points to centers
     for(i = 0; i < *k; i++)
     {
-        for(j = 0; j < *dimensions; j++)
+        # pragma omp parallel
         {
-            pointIndex = randomNumbers[i];
-            centers[i][j] = points[pointIndex][j];
+            # pragma omp for
+            for (j = 0; j < *dimensions; j++) {
+                pointIndex = randomNumbers[i];
+                centers[i][j] = points[pointIndex][j];
+            }
         }
     }
 
@@ -180,8 +190,12 @@ void newCenters(double **points, const int *rows, int const *dimensions, int con
 
     // Initialize all center points
     for (cluster = 0; cluster < *k; cluster++) {
-        for (column = 0; column < *dimensions; column++) {
-            centers[cluster][column] = 0;
+        # pragma omp parallel
+        {
+            # pragma omp for
+            for (column = 0; column < *dimensions; column++) {
+                centers[cluster][column] = 0;
+            }
         }
         centerRadius[cluster] = 0;
     }
@@ -192,9 +206,13 @@ void newCenters(double **points, const int *rows, int const *dimensions, int con
         for (row = 0; row < *rows; row++) {
             if (clusters[row] == cluster) {
                 itemsFound++;
-                for (column = 0; column < *dimensions; column++) {
-                    // Calculate the sum per column
-                    centers[cluster][column] = centers[cluster][column] + points[row][column];
+                # pragma omp parallel
+                {
+                    # pragma omp for
+                    for (column = 0; column < *dimensions; column++) {
+                        // Calculate the sum per column
+                        centers[cluster][column] = centers[cluster][column] + points[row][column];
+                    }
                 }
             }
         }

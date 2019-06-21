@@ -1,6 +1,7 @@
 #ifndef MY_K_MEANS_H
 #define MY_K_MEANS_H
 
+#include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
