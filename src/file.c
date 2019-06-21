@@ -56,7 +56,7 @@ void writeClusters(double **array, int const *rows, int const *cols, int const *
     // Clusters
     for (cluster = 0; cluster < *k; cluster++) {
         // Create file name eg. cluster_1
-        itoa(cluster + 1, clusterNumber, 10);
+        sprintf(clusterNumber, "%d", cluster + 1);
         strcpy(fileName, clusterStr);
         strcat(fileName, clusterNumber);
 
@@ -92,6 +92,7 @@ void writeCenters(int const *cols, int const *k, double **centers, double *cente
 
     for (int i = 0; i < *k; i++) {
         fprintf(fp, "Center %d Radius: %lf \n", i + 1, centerRadius[i]);
+        fprintf(fp, "Point: ");
         for (int column = 0; column < *cols; column++) {
             fprintf(fp, "%lf ", centers[i][column]);
         }

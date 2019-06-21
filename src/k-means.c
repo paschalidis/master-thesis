@@ -28,11 +28,12 @@ void randomizeCenters(double **points, const int *rows, int const *dimensions, i
  * @param k
  * @param centers
  * @param clusters
+ * @param centerRadius
  */
 void newCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers,
-                int const *clusters);
+                int const *clusters, double *centerRadius);
 
-int *run(double **points, int const *rows, int *dimensions, int const *k, double **centers) {
+int *run(double **points, int const *rows, int *dimensions, int const *k, double **centers, double *centerRadius) {
     // indexes of row, dimension, center(k)
     int i, j, centerIndex;
 
@@ -58,6 +59,7 @@ int *run(double **points, int const *rows, int *dimensions, int const *k, double
         printf("\nFailure to allocate room for the clusters");
         exit(0);
     }
+
     initializeClusters(clusters, rows);
 
     randomizeCenters(points, rows, dimensions, k, centers);
@@ -107,6 +109,13 @@ int *run(double **points, int const *rows, int *dimensions, int const *k, double
                 }
                 printf("Distance Pointer: %d to Center %d is: %f\n", i, centerIndex, euclideanDistance);
             }
+
+            // Set radius of cluster
+            if(minDistance > centerRadius[cluster])
+            {
+                centerRadius[cluster] = minDistance;
+            }
+
             printf("min distance is %f Pointer: %d set to Cluster %d\n", minDistance, i, cluster + 1);
             if (clusters[i] != cluster) {
                 clusterChange = 1;
@@ -115,7 +124,7 @@ int *run(double **points, int const *rows, int *dimensions, int const *k, double
         }
 
         if (clusterChange == 1) {
-            newCenters(points, rows, dimensions, k, centers, clusters);
+            newCenters(points, rows, dimensions, k, centers, clusters, centerRadius);
         }
         currentRuns++;
     } while (clusterChange == 1 && currentRuns < maxAllowedRuns);
@@ -183,7 +192,7 @@ void randomizeCenters(double **points, const int *rows, int const *dimensions, i
 }
 
 void newCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers,
-                int const *clusters) {
+                int const *clusters, double *centerRadius) {
     int row, column, cluster;
 
     printf("============ New Centers ===========\n");
@@ -193,6 +202,7 @@ void newCenters(double **points, const int *rows, int const *dimensions, int con
         for (column = 0; column < *dimensions; column++) {
             centers[cluster][column] = 0;
         }
+        centerRadius[cluster] = 0;
     }
 
     // calculate the average per column
@@ -230,43 +240,4 @@ void newCenters(double **points, const int *rows, int const *dimensions, int con
     }
 
     printf("============ End New Centers ===========\n");
-}
-
-double *radius(int const *k, double **points, double **centers, int const *clusters, const int *rows,
-               const int *dimensions) {
-    double maxDistance;
-    double *radius;
-
-    // allocate memory for radius
-    radius = malloc((*k) * sizeof(double));
-    if (radius == NULL) {
-        printf("\nFailure to allocate room for the clusters");
-        exit(0);
-    }
-
-    double pointDistance = 0;
-    double sumDistance, euclideanDistance;
-    for (int centerIndex = 0; centerIndex < *k; centerIndex++) {
-        maxDistance = -1;
-        for (int clusterIndex = 0; clusterIndex < *rows; clusterIndex++) {
-            if (clusters[clusterIndex] == centerIndex) {
-                sumDistance = 0;
-                for (int dimension = 0; dimension < *dimensions; dimension++) {
-                    // Point distance from center
-                    pointDistance = points[clusterIndex][dimension] - centers[centerIndex][dimension];
-                    // Power of pointDistance used to calculate Euclidean Distance
-                    pointDistance = pointDistance * pointDistance;
-                    // Add to sum
-                    sumDistance = sumDistance + pointDistance;
-                }// for dimensions
-                euclideanDistance = sqrt(sumDistance);
-                // Set max distance
-                if (euclideanDistance > maxDistance) {
-                    maxDistance = euclideanDistance;
-                }
-            }
-        }// for clusters
-        radius[centerIndex] = maxDistance;
-    } // for k
-    return radius;
 }

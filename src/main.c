@@ -96,10 +96,27 @@ int main(int argc, const char *argv[])
         centers[i] = centerPointer + (i * numberOfColumns);
     }
 
+    // allocate memory for radius
+    centerRadius = malloc(k * sizeof(double *));
+    if (centerRadius == NULL) {
+        printf("\nFailure to allocate room for the centerRadius2");
+        exit(0);
+    }
+
+    // initialize center radius
+    for(int i = 0; i < k; i++){
+        centerRadius[i] = 0;
+    }
+
     readFile(fileName, rowPointer, separator);
 
-    clusters = run(rowPointer, &numberOfRows, &numberOfColumns, &k, centers);
-    centerRadius = radius(&k, rowPointer, centers, clusters, &numberOfRows, &numberOfColumns);
+    clusters = run(rowPointer, &numberOfRows, &numberOfColumns, &k, centers, centerRadius);
+
+    for(int i = 0; i < k; i++){
+        printf("\nCenter centerRadius\n");
+        printf("Radius of Center %d is %f\n",i, centerRadius[i]);
+    }
+
 
     writeClusters(rowPointer, &numberOfRows, &numberOfColumns, clusters, &k);
     writeCenters(&numberOfColumns, &k, centers, centerRadius);
