@@ -218,9 +218,13 @@ void newCenters(double **points, const int *rows, int const *dimensions, int con
         }
 
         // Average per column for new center points
-        for (column = 0; column < *dimensions; column++) {
-            if (itemsFound > 0) {
-                centers[cluster][column] = centers[cluster][column] / itemsFound;
+        # pragma omp parallel
+        {
+            # pragma omp for
+            for (column = 0; column < *dimensions; column++) {
+                if (itemsFound > 0) {
+                    centers[cluster][column] = centers[cluster][column] / itemsFound;
+                }
             }
         }
     }

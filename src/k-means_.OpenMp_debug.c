@@ -100,6 +100,7 @@ int *run(double **points, int const *rows, int *dimensions, int const *k, double
                     // Add to sum
                     //sumDistance = sumDistance + pointDistance;
                     sumDistance += pointDistance;
+                    printf("Sum of dimension for Pointer: %d %d to Center %d %d calculated on thread %d\n", i, j, centerIndex, j, omp_get_thread_num());
                 }
                 euclideanDistance = sqrt(sumDistance);
                 // Set first distance as min distance
@@ -148,54 +149,49 @@ int *run(double **points, int const *rows, int *dimensions, int const *k, double
 }
 
 void initializeClusters(int *clusters, int const *rows) {
+    printf("============= initializeClusters =============\n");
     # pragma omp parallel
     {
         # pragma omp for
         for (int i = 0; i < *rows; i++) {
+            printf("Cluster %d initialize on thread %d\n", i, omp_get_thread_num());
             clusters[i] = 0;
         }
     }
+    printf("============= initializeClusters =============\n");
 }
 
 void randomizeCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers) {
 
     int *randomNumbers;
-    int i,j, pointIndex, randomNumber, found;
+    int i,j, randomNumber, found;
 
     // allocate memory for random numbers
     randomNumbers = malloc((*k) * sizeof(int));
+    if (randomNumbers == NULL) {
+        printf("\nFailure to allocate room for the random numbers");
+        exit(0);
+    }
 
     // Make difference random numbers
     for(i = 0; i < *k; i++)
     {
+        found = 0;
         do{
-            found = 0;
             randomNumber = rand() % *rows;
-            // Search if random number exists
-            # pragma omp parallel
-            {
-                # pragma omp for
-                for (j = 0; j < *k; j++) {
-                    if (randomNumbers[j] == randomNumber) {
-                        found = 1;
-                    }
+            for(j = i; j > 0; j--){
+                if (randomNumbers[j-1] == randomNumber) {
+                    found = 1;
                 }
             }
-        }while (found == 1);
-
+        } while (found == 1);
         randomNumbers[i] = randomNumber;
-    }
 
-    // Store points to centers
-    for(i = 0; i < *k; i++)
-    {
-        # pragma omp parallel
-        {
-            # pragma omp for
-            for (j = 0; j < *dimensions; j++) {
-                pointIndex = randomNumbers[i];
-                centers[i][j] = points[pointIndex][j];
-            }
+        // Store points to centers
+        # pragma omp parallel for private(j) shared(randomNumbers, centers, points)
+        for (j = 0; j < *dimensions; j++) {
+            centers[i][j] = points[randomNumber][j];
+            printf("New Center %d with dimension %d set it on thread %d\n", i, j, omp_get_thread_num());
         }
     }
 
@@ -204,7 +200,7 @@ void randomizeCenters(double **points, const int *rows, int const *dimensions, i
 
 void newCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers,
                 int const *clusters, double *centerRadius) {
-    int row, column, cluster;
+    int row, column, cluster, itemsFound;
 
     printf("============ New Centers ===========\n");
 
@@ -215,6 +211,7 @@ void newCenters(double **points, const int *rows, int const *dimensions, int con
             # pragma omp for
             for (column = 0; column < *dimensions; column++) {
                 centers[cluster][column] = 0;
+                printf("Center %d %d initialize on thread %d\n", cluster, column, omp_get_thread_num());
             }
         }
         centerRadius[cluster] = 0;
@@ -223,7 +220,7 @@ void newCenters(double **points, const int *rows, int const *dimensions, int con
     // calculate the average per column
     for (cluster = 0; cluster < *k; cluster++) {
         printf("============ Cluster %d ===========\n", cluster + 1);
-        int itemsFound = 0;
+        itemsFound = 0;
         for (row = 0; row < *rows; row++) {
             if (clusters[row] == cluster) {
                 itemsFound++;
@@ -241,15 +238,17 @@ void newCenters(double **points, const int *rows, int const *dimensions, int con
         }
 
         // Average per column for new center points
+        # pragma omp parallel for private(column) shared(cluster, itemsFound, centers)
         for (column = 0; column < *dimensions; column++) {
             if (itemsFound > 0) {
                 centers[cluster][column] = centers[cluster][column] / itemsFound;
             }
+            printf("Center %d %d average calculated on thread %d\n", cluster, column, omp_get_thread_num());
         }
         printf("Items found in cluster %d : %d\n", cluster, itemsFound);
         printf("\n");
     }
-    printf("============== Centers =============\n");
+    printf("============== New Centers =============\n");
     for (cluster = 0; cluster < *k; cluster++) {
         printf("Center %d : ", cluster);
         for (column = 0; column < *dimensions; column++) {
@@ -259,47 +258,4 @@ void newCenters(double **points, const int *rows, int const *dimensions, int con
     }
 
     printf("============ End New Centers ===========\n");
-}
-
-double *radius(int const *k, double **points, double **centers, int const *clusters, const int *rows,
-               const int *dimensions) {
-    double maxDistance;
-    double *radius;
-
-    // allocate memory for radius
-    radius = malloc((*k) * sizeof(double));
-    if (radius == NULL) {
-        printf("\nFailure to allocate room for the clusters");
-        exit(0);
-    }
-
-    double pointDistance = 0;
-    double sumDistance, euclideanDistance;
-    for (int centerIndex = 0; centerIndex < *k; centerIndex++) {
-        maxDistance = -1;
-        for (int clusterIndex = 0; clusterIndex < *rows; clusterIndex++) {
-            if (clusters[clusterIndex] == centerIndex) {
-                sumDistance = 0;
-                # pragma omp parallel
-                {
-                    # pragma omp for
-                    for (int dimension = 0; dimension < *dimensions; dimension++) {
-                        // Point distance from center
-                        pointDistance = points[clusterIndex][dimension] - centers[centerIndex][dimension];
-                        // Power of pointDistance used to calculate Euclidean Distance
-                        pointDistance = pointDistance * pointDistance;
-                        // Add to sum
-                        sumDistance = sumDistance + pointDistance;
-                    }// for dimensions
-                }
-                euclideanDistance = sqrt(sumDistance);
-                // Set max distance
-                if (euclideanDistance > maxDistance) {
-                    maxDistance = euclideanDistance;
-                }
-            }
-        }// for clusters
-        radius[centerIndex] = maxDistance;
-    } // for k
-    return radius;
 }
