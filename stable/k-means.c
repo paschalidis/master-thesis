@@ -147,10 +147,14 @@ void initializeClusters(int *clusters, int const *rows) {
 void randomizeCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers) {
 
     int *randomNumbers;
-    int i,j, pointIndex, randomNumber, found;
+    int i,j, randomNumber, found;
 
     // allocate memory for random numbers
     randomNumbers = malloc((*k) * sizeof(int));
+    if (randomNumbers == NULL) {
+        printf("\nFailure to allocate room for the random numbers");
+        exit(0);
+    }
 
     // Make difference random numbers
     for(i = 0; i < *k; i++)
@@ -159,23 +163,18 @@ void randomizeCenters(double **points, const int *rows, int const *dimensions, i
             found = 0;
             randomNumber = rand() % *rows;
             // Search if random number exists
-            for(j = 0; j < *k; j++){
-                if(randomNumbers[j] == randomNumber){
+            for(j = i; j > 0; j--){
+                if (randomNumbers[j-1] == randomNumber) {
                     found = 1;
                 }
             }
         }while (found == 1);
 
         randomNumbers[i] = randomNumber;
-    }
 
-    // Store points to centers
-    for(i = 0; i < *k; i++)
-    {
-        for(j = 0; j < *dimensions; j++)
-        {
-            pointIndex = randomNumbers[i];
-            centers[i][j] = points[pointIndex][j];
+        // Store points to centers
+        for (j = 0; j < *dimensions; j++) {
+            centers[i][j] = points[randomNumber][j];
         }
     }
 
