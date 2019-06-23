@@ -85,7 +85,7 @@ int *run(double **points, int const *rows, int *dimensions, int const *k, double
     printf("============== Start k-means =============\n");
     do {
         clusterChange = 0;
-        # pragma omp parallel for private(i, j, centerIndex, pointDistance, sumDistance, euclideanDistance, minDistance, cluster) shared(clusterChange, currentRuns, clusters)
+        # pragma omp parallel for private(i, j, centerIndex, pointDistance, sumDistance, euclideanDistance, minDistance, cluster) shared(clusterChange, clusters, points)
         for (i = 0; i < *rows; i++) {
             printf("============= Start Parallel Thread %d with Row %d =============\n", omp_get_thread_num(), i);
             minDistance = -1;
@@ -205,25 +205,56 @@ void newCenters(double **points, const int *rows, int const *dimensions, int con
     int column, cluster;
     int clusterItems[*k];
 
+    printf("============== New Centers ==========\n");
     // Initialize all center points
+    # pragma omp parallel for private(cluster, column) shared(centers, clusterItems)
     for (cluster = 0; cluster < *k; cluster++) {
         for (column = 0; column < *dimensions; column++) {
             centers[cluster][column] = 0;
+            printf("Center %d %d initialize on thread %d\n", cluster, column, omp_get_thread_num());
         }
         clusterItems[cluster] = 0;
+        printf("Cluster Item %d initialize on thread %d\n", cluster, omp_get_thread_num());
     }
 
+    printf("============== Sum Per Column ==========\n");
     // Calculate sum per column and items found per cluster
+    # pragma omp parallel for private(cluster, column) shared(centers, clusterItems, points)
     for(cluster = 0; cluster < *rows; cluster++){
         for(column = 0; column < *dimensions; column++){
+            printf("Pointer %d %d = %lf added to Center %d %d = %lf in thread %d \n", cluster, column, points[cluster][column], clusters[cluster], column, centers[clusters[cluster]][column],  omp_get_thread_num());
             centers[clusters[cluster]][column] = centers[clusters[cluster]][column] + points[cluster][column];
+            printf("New Center sum %d %d = %lf on thread %d\n", clusters[cluster], column, centers[clusters[cluster]][column], omp_get_thread_num());
         }
         clusterItems[clusters[cluster]] = clusterItems[clusters[cluster]] + 1;
+        printf("Cluster Item %d iterator on thread %d\n", cluster, omp_get_thread_num());
     }
 
+    // calculate the average per column
+    for (cluster = 0; cluster < *k; cluster++) {
+        printf("============ Cluster %d ===========\n", cluster + 1);
+        int itemsFound = 0;
+        for (int row = 0; row < *rows; row++) {
+            if (clusters[row] == cluster) {
+                itemsFound++;
+                for (column = 0; column < *dimensions; column++) {
+                    printf("%lf ", points[row][column]);
+                }
+                printf("\n");
+            }
+        }
+        printf("Items found in cluster %d : %d\n", cluster, itemsFound);
+        printf("\n");
+    }
+
+    printf("-------------------------- Average per column -----------------------\n");
     // Average per column for new centers
+    # pragma omp parallel for private(cluster, column) shared(centers, clusterItems)
     for(cluster = 0; cluster < *k; cluster++) {
+        printf("Items found in cluster %d : %d\n", cluster, clusterItems[cluster]);
         for (column = 0; column < *dimensions; column++) {
+            printf("Center %d %d divided on thread %d\n", cluster, column, omp_get_thread_num());
+            printf("Center %d %d = %lf\n", cluster, column, centers[cluster][column]);
             if (clusterItems[cluster] > 0) {
                 centers[cluster][column] = centers[cluster][column] / clusterItems[cluster];
             } else {
@@ -231,6 +262,7 @@ void newCenters(double **points, const int *rows, int const *dimensions, int con
             }
         }
     }
+    printf("============== End New Centers ==========\n");
 }
 
 double *radius(int const *k, double **points, double **centers, int const *clusters, const int *rows,
