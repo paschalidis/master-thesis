@@ -31,7 +31,7 @@ void randomizeCenters(double **points, const int *rows, int const *dimensions, i
  * @param centerRadius
  */
 void newCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers,
-                int const *clusters, double *centerRadius);
+                int const *clusters, double *centerRadius, int *clusterItems);
 
 int *run(double **points, int const *rows, int *dimensions, int const *k, double **centers, double *centerRadius) {
     // indexes of row, dimension, center(k)
@@ -52,6 +52,14 @@ int *run(double **points, int const *rows, int *dimensions, int const *k, double
     // K-means max allowed runs and counter for runs
     int maxAllowedRuns = 100;
     int currentRuns = 0;
+
+    int *clusterItems;
+    // allocate memory for random numbers
+    clusterItems = malloc((*k) * sizeof(int));
+    if (clusterItems == NULL) {
+        printf("\nFailure to allocate room for the cluster items");
+        exit(0);
+    }
 
     // allocate memory for clusters
     clusters = malloc((*rows) * sizeof(int));
@@ -124,7 +132,7 @@ int *run(double **points, int const *rows, int *dimensions, int const *k, double
         }
 
         if (clusterChange == 1) {
-            newCenters(points, rows, dimensions, k, centers, clusters, centerRadius);
+            newCenters(points, rows, dimensions, k, centers, clusters, centerRadius, clusterItems);
         }
         currentRuns++;
     } while (clusterChange == 1 && currentRuns < maxAllowedRuns);
@@ -192,8 +200,12 @@ void randomizeCenters(double **points, const int *rows, int const *dimensions, i
 }
 
 void newCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers,
-                int const *clusters, double *centerRadius) {
+                int const *clusters, double *centerRadius, int *clusterItems) {
     int row, column, cluster;
+
+    for(cluster = 0; cluster < *rows; cluster++){
+        printf("Row %d to cluster %d\n", cluster, clusters[cluster]);
+    }
 
     printf("============ New Centers ===========\n");
 
@@ -239,5 +251,45 @@ void newCenters(double **points, const int *rows, int const *dimensions, int con
         printf("\n");
     }
 
+    printf("============ End New Centers ===========\n");
+
+    // Initialize all center points
+    for (cluster = 0; cluster < *k; cluster++) {
+        for (column = 0; column < *dimensions; column++) {
+            centers[cluster][column] = 0;
+        }
+        clusterItems[cluster] = 0;
+    }
+
+    for(cluster = 0; cluster < *rows; cluster++){
+        for(column = 0; column < *dimensions; column++){
+            centers[clusters[cluster]][column] = centers[clusters[cluster]][column] + points[cluster][column];
+        }
+        clusterItems[clusters[cluster]] = clusterItems[clusters[cluster]] + 1;
+    }
+
+    for (cluster = 0; cluster < *k; cluster++) {
+        printf("Items found in cluster %d : %d\n", cluster, clusterItems[cluster]);
+    }
+
+    for(cluster = 0; cluster < *k; cluster++) {
+
+        for (column = 0; column < *dimensions; column++) {
+                if (clusterItems[cluster] > 0) {
+                centers[cluster][column] = centers[cluster][column] / clusterItems[cluster];
+                } else {
+                    centers[cluster][column] = 0;
+                }
+        }
+    }
+
+    printf("============== Centers =============\n");
+    for (cluster = 0; cluster < *k; cluster++) {
+        printf("Center %d : ", cluster);
+        for (column = 0; column < *dimensions; column++) {
+            printf("%f, ", centers[cluster][column]);
+        }
+        printf("\n");
+    }
     printf("============ End New Centers ===========\n");
 }

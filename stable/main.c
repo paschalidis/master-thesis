@@ -2,8 +2,7 @@
 #include <stdlib.h>
 
 #include "file.h"
-//#include "k-means.h"
-#include "k-menas-before.h"
+#include "k-means.h"
 #include "time.h"
 
 #define DEFAULT_SEPARATOR " "
@@ -55,6 +54,7 @@ int main(int argc, const char *argv[])
     countRowsCols(fileName, &numberOfRows, &numberOfColumns, separator);
 
     validateK(&k, &numberOfRows);
+    printf("Rows: %d\tCols: %d\n", numberOfRows, numberOfColumns);
 
     // allocate the memory for the array
     arrayPointer = malloc(numberOfRows * numberOfColumns * sizeof(double));
@@ -96,18 +96,6 @@ int main(int argc, const char *argv[])
         centers[i] = centerPointer + (i * numberOfColumns);
     }
 
-    // allocate memory for radius
-    centerRadius = malloc(k * sizeof(double *));
-    if (centerRadius == NULL) {
-        printf("\nFailure to allocate room for the centerRadius2");
-        exit(0);
-    }
-
-    // initialize center radius
-    for(int i = 0; i < k; i++){
-        centerRadius[i] = 0;
-    }
-
     readFile(fileName, rowPointer, separator);
 
     clusters = run(rowPointer, &numberOfRows, &numberOfColumns, &k, centers);
@@ -115,11 +103,6 @@ int main(int argc, const char *argv[])
 
     writeClusters(rowPointer, &numberOfRows, &numberOfColumns, clusters, &k);
     writeCenters(&numberOfColumns, &k, centers, centerRadius);
-
-//    clusters = run(rowPointer, &numberOfRows, &numberOfColumns, &k, centers, centerRadius);
-//
-//    writeCenters(&numberOfColumns, &k, centers, centerRadius);
-//    writeClusters(rowPointer, &numberOfRows, &numberOfColumns, clusters, &k);
 
     return 0;
 }
