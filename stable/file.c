@@ -56,7 +56,7 @@ void writeClusters(double **array, int const *rows, int const *cols, int const *
     // Clusters
     for (cluster = 0; cluster < *k; cluster++) {
         // Create file name eg. cluster_1
-        itoa(cluster + 1, clusterNumber, 10);
+        sprintf(clusterNumber, "%d", cluster + 1);
         strcpy(fileName, clusterStr);
         strcat(fileName, clusterNumber);
 
