@@ -48,6 +48,10 @@ int *run(double **points, int const *rows, int *dimensions, int const *k, double
     // flag to repeat k-means process as one or more cluster has change
     int clusterChange;
 
+    // K-means max allowed runs and counter for runs
+    int maxAllowedRuns = 100;
+    int currentRuns = 0;
+
     // allocate memory for clusters
     clusters = malloc((*rows) * sizeof(int));
     if (clusters == NULL) {
@@ -58,26 +62,27 @@ int *run(double **points, int const *rows, int *dimensions, int const *k, double
 
     randomizeCenters(points, rows, dimensions, k, centers);
 
+    printf("============== Initialize Centers =============\n");
+    for (i = 0; i < *k; i++) {
+        printf("Center %d: ", i + 1);
+        for (j = 0; j < *dimensions; j++) {
+            printf("%f ", centers[i][j]);
+        }
+        printf("\n");
+    }
+    printf("============== Initialize center =============\n");
+
     // K-means steps
     // While you have change in clusters continue
     // calculate for each point Euclidean distance from centers
     // for each row
     // for each dimension
-    // for each center -- this can be separate function
+    // for each center -- this can be seperate function
     // calculate the distance and find the min
     // set point to cluster
     // if cluster has change update flag
-    // and add them to nears cluster (min distance from center)
-    // if point change cluster update the flag to continue run
 
-    // When you add all points to relevant cluster then
-    // calculate the average per cluster and set new centers
-    // for each cluster
-    // for each k --> the number of cluster
-    // calculate average
-    // and update new center
-    // re run all steps until there are no change to cluster
-
+    printf("============== Start k-means =============\n");
     do {
         clusterChange = 0;
         for (i = 0; i < *rows; i++) {
@@ -100,7 +105,9 @@ int *run(double **points, int const *rows, int *dimensions, int const *k, double
                     minDistance = euclideanDistance;
                     cluster = centerIndex;
                 }
+                printf("Distance Pointer: %d to Center %d is: %f\n", i, centerIndex, euclideanDistance);
             }
+            printf("min distance is %f Pointer: %d set to Cluster %d\n", minDistance, i, cluster + 1);
             if (clusters[i] != cluster) {
                 clusterChange = 1;
             }
@@ -110,7 +117,21 @@ int *run(double **points, int const *rows, int *dimensions, int const *k, double
         if (clusterChange == 1) {
             newCenters(points, rows, dimensions, k, centers, clusters);
         }
-    } while (clusterChange == 1);
+        currentRuns++;
+    } while (clusterChange == 1 && currentRuns < maxAllowedRuns);
+
+    printf("============== Total Runs of k-means %d =============\n", currentRuns);
+
+    // and add them to nears cluster (min distance from center)
+    // if point change cluster update the flag to continue run
+
+    // When you add all points to relevant cluster then
+    // calculate the average per cluster and set new centers
+    // for each cluster
+    // for each k --> the number of cluster
+    // calculate average
+    // and update new center
+    // re run all steps until there are no change to cluster
 
     return clusters;
 }
@@ -144,6 +165,7 @@ void randomizeCenters(double **points, const int *rows, int const *dimensions, i
             do {
                 foundSameRandomNumbers = 0;
                 randomNumber = rand() % *rows;
+                printf("Random Number: %d\n", randomNumber);
                 for (j = i; j > 0; j--) {
                     if (randomNumbers[j - 1] == randomNumber) {
                         foundSameRandomNumbers = 1;
@@ -178,6 +200,8 @@ void newCenters(double **points, const int *rows, int const *dimensions, int con
     int column, cluster;
     int clusterItems[*k];
 
+    printf("============ New Centers ===========\n");
+
     // Initialize all center points
     for (cluster = 0; cluster < *k; cluster++) {
         for (column = 0; column < *dimensions; column++) {
@@ -204,6 +228,17 @@ void newCenters(double **points, const int *rows, int const *dimensions, int con
             }
         }
     }
+
+    printf("============== Centers =============\n");
+    for (cluster = 0; cluster < *k; cluster++) {
+        printf("Center %d : ", cluster);
+        for (column = 0; column < *dimensions; column++) {
+            printf("%f, ", centers[cluster][column]);
+        }
+        printf("\n");
+    }
+
+    printf("============ End New Centers ===========\n");
 }
 
 double *radius(int const *k, double **points, double **centers, int const *clusters, const int *rows,

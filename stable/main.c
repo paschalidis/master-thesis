@@ -54,7 +54,6 @@ int main(int argc, const char *argv[])
     countRowsCols(fileName, &numberOfRows, &numberOfColumns, separator);
 
     validateK(&k, &numberOfRows);
-    printf("Rows: %d\tCols: %d\n", numberOfRows, numberOfColumns);
 
     // allocate the memory for the array
     arrayPointer = malloc(numberOfRows * numberOfColumns * sizeof(double));
