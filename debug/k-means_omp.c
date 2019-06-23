@@ -48,6 +48,10 @@ int *run(double **points, int const *rows, int *dimensions, int const *k, double
     // flag to repeat k-means process as one or more cluster has change
     int clusterChange;
 
+    // K-means max allowed runs and counter for runs
+    int maxAllowedRuns = 100;
+    int currentRuns = 0;
+
     // allocate memory for clusters
     clusters = malloc((*rows) * sizeof(int));
     if (clusters == NULL) {
@@ -78,10 +82,12 @@ int *run(double **points, int const *rows, int *dimensions, int const *k, double
     // and update new center
     // re run all steps until there are no change to cluster
 
+    printf("============== Start k-means =============\n");
     do {
         clusterChange = 0;
         # pragma omp parallel for private(i, j, centerIndex, pointDistance, sumDistance, euclideanDistance, minDistance, cluster) shared(clusterChange, clusters, points)
         for (i = 0; i < *rows; i++) {
+            printf("============= Start Parallel Thread %d with Row %d =============\n", omp_get_thread_num(), i);
             minDistance = -1;
             cluster = 0;
             for (centerIndex = 0; centerIndex < *k; centerIndex++) {
@@ -93,6 +99,9 @@ int *run(double **points, int const *rows, int *dimensions, int const *k, double
                     pointDistance = pointDistance * pointDistance;
                     // Add to sum
                     sumDistance = sumDistance + pointDistance;
+
+                //    if(omp_get_thread_num() == 0)
+                        printf("Sum of dimension for Pointer: %d %d to Center %d %d calculated on thread %d\n", i, j, centerIndex, j, omp_get_thread_num());
                 }
                 euclideanDistance = sqrt(sumDistance);
                 // Set first distance as min distance
@@ -100,30 +109,43 @@ int *run(double **points, int const *rows, int *dimensions, int const *k, double
                     minDistance = euclideanDistance;
                     cluster = centerIndex;
                 }
+
+              //  if(omp_get_thread_num() == 0)
+                    printf("Distance Pointer: %d to Center %d is: %f\n", i, centerIndex, euclideanDistance);
             }
+
+            //if(omp_get_thread_num() == 0)
+                printf("min distance is %f Pointer: %d set to Cluster %d\n", minDistance, i, cluster + 1);
 
             if (clusters[i] != cluster) {
                 clusterChange = 1;
             }
             clusters[i] = cluster;
+            printf("============= End Parallel Thread %d =============\n", omp_get_thread_num());
         }
 
         if (clusterChange == 1) {
             newCenters(points, rows, dimensions, k, centers, clusters);
         }
-    } while (clusterChange == 1);
+        currentRuns++;
+    } while (clusterChange == 1 && currentRuns < maxAllowedRuns);
+
+    printf("============== Total Runs of k-means %d =============\n", currentRuns);
 
     return clusters;
 }
 
 void initializeClusters(int *clusters, int const *rows) {
+    printf("============= initializeClusters =============\n");
     # pragma omp parallel
     {
         # pragma omp for
         for (int i = 0; i < *rows; i++) {
+            printf("Cluster %d initialize on thread %d\n", i, omp_get_thread_num());
             clusters[i] = 0;
         }
     }
+    printf("============= initializeClusters =============\n");
 }
 
 void randomizeCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers) {
@@ -183,28 +205,56 @@ void newCenters(double **points, const int *rows, int const *dimensions, int con
     int column, cluster;
     int clusterItems[*k];
 
+    printf("============== New Centers ==========\n");
     // Initialize all center points
     # pragma omp parallel for private(cluster, column) shared(centers, clusterItems)
     for (cluster = 0; cluster < *k; cluster++) {
         for (column = 0; column < *dimensions; column++) {
             centers[cluster][column] = 0;
+            printf("Center %d %d initialize on thread %d\n", cluster, column, omp_get_thread_num());
         }
         clusterItems[cluster] = 0;
+        printf("Cluster Item %d initialize on thread %d\n", cluster, omp_get_thread_num());
     }
 
+    printf("============== Sum Per Column ==========\n");
     // Calculate sum per column and items found per cluster
     # pragma omp parallel for private(cluster, column) shared(centers, clusterItems, points)
     for(cluster = 0; cluster < *rows; cluster++){
         for(column = 0; column < *dimensions; column++){
+            printf("Pointer %d %d = %lf added to Center %d %d = %lf in thread %d \n", cluster, column, points[cluster][column], clusters[cluster], column, centers[clusters[cluster]][column],  omp_get_thread_num());
             centers[clusters[cluster]][column] = centers[clusters[cluster]][column] + points[cluster][column];
+            printf("New Center sum %d %d = %lf on thread %d\n", clusters[cluster], column, centers[clusters[cluster]][column], omp_get_thread_num());
         }
         clusterItems[clusters[cluster]] = clusterItems[clusters[cluster]] + 1;
+        printf("Cluster Item %d iterator on thread %d\n", cluster, omp_get_thread_num());
     }
 
+    // calculate the average per column
+    for (cluster = 0; cluster < *k; cluster++) {
+        printf("============ Cluster %d ===========\n", cluster + 1);
+        int itemsFound = 0;
+        for (int row = 0; row < *rows; row++) {
+            if (clusters[row] == cluster) {
+                itemsFound++;
+                for (column = 0; column < *dimensions; column++) {
+                    printf("%lf ", points[row][column]);
+                }
+                printf("\n");
+            }
+        }
+        printf("Items found in cluster %d : %d\n", cluster, itemsFound);
+        printf("\n");
+    }
+
+    printf("-------------------------- Average per column -----------------------\n");
     // Average per column for new centers
     # pragma omp parallel for private(cluster, column) shared(centers, clusterItems)
     for(cluster = 0; cluster < *k; cluster++) {
+        printf("Items found in cluster %d : %d\n", cluster, clusterItems[cluster]);
         for (column = 0; column < *dimensions; column++) {
+            printf("Center %d %d divided on thread %d\n", cluster, column, omp_get_thread_num());
+            printf("Center %d %d = %lf\n", cluster, column, centers[cluster][column]);
             if (clusterItems[cluster] > 0) {
                 centers[cluster][column] = centers[cluster][column] / clusterItems[cluster];
             } else {
@@ -212,6 +262,7 @@ void newCenters(double **points, const int *rows, int const *dimensions, int con
             }
         }
     }
+    printf("============== End New Centers ==========\n");
 }
 
 double *radius(int const *k, double **points, double **centers, int const *clusters, const int *rows,
