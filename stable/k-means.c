@@ -183,7 +183,8 @@ void randomizeCenters(double **points, const int *rows, int const *dimensions, i
 
 void newCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers,
                 int const *clusters) {
-    int row, column, cluster;
+    int column, cluster;
+    int clusterItems[*k];
 
     printf("============ New Centers ===========\n");
 
@@ -192,33 +193,26 @@ void newCenters(double **points, const int *rows, int const *dimensions, int con
         for (column = 0; column < *dimensions; column++) {
             centers[cluster][column] = 0;
         }
+        clusterItems[cluster] = 0;
     }
 
-    // calculate the average per column
-    for (cluster = 0; cluster < *k; cluster++) {
-        printf("============ Cluster %d ===========\n", cluster + 1);
-        int itemsFound = 0;
-        for (row = 0; row < *rows; row++) {
-            if (clusters[row] == cluster) {
-                itemsFound++;
-                for (column = 0; column < *dimensions; column++) {
-                    printf("%lf ", points[row][column]);
-                    // Calculate the sum per column
-                    centers[cluster][column] = centers[cluster][column] + points[row][column];
-                }
-                printf("\n");
-            }
+    for(cluster = 0; cluster < *rows; cluster++){
+        for(column = 0; column < *dimensions; column++){
+            centers[clusters[cluster]][column] = centers[clusters[cluster]][column] + points[cluster][column];
         }
+        clusterItems[clusters[cluster]] = clusterItems[clusters[cluster]] + 1;
+    }
 
-        // Average per column for new center points
+    for(cluster = 0; cluster < *k; cluster++) {
         for (column = 0; column < *dimensions; column++) {
-            if (itemsFound > 0) {
-                centers[cluster][column] = centers[cluster][column] / itemsFound;
+            if (clusterItems[cluster] > 0) {
+                centers[cluster][column] = centers[cluster][column] / clusterItems[cluster];
+            } else {
+                centers[cluster][column] = 0;
             }
         }
-        printf("Items found in cluster %d : %d\n", cluster, itemsFound);
-        printf("\n");
     }
+
     printf("============== Centers =============\n");
     for (cluster = 0; cluster < *k; cluster++) {
         printf("Center %d : ", cluster);
