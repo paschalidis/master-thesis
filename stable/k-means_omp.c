@@ -32,7 +32,7 @@ void randomizeCenters(double **points, const int *rows, int const *dimensions, i
 void newCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers,
                 int const *clusters);
 
-int *run(double **points, int const *rows, int *dimensions, int const *k, double **centers) {
+int *run(double **points, int const *rows, int const *dimensions, int const *k, double **centers) {
     // indexes of row, dimension, center(k)
     int i, j, centerIndex;
 
