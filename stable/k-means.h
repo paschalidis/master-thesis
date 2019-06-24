@@ -15,7 +15,7 @@
  * @param centers
  * @return
  */
-int *run(double **points, int const *rows, int *dimensions, int const *k, double **centers);
+int *run(double **points, int const *rows, int const *dimensions, int const *k, double **centers);
 
 /**
  * Calculate radius for each center (max distance)

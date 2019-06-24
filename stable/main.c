@@ -23,6 +23,16 @@ void argumentsValidator(int numberOfArguments);
  */
 void validateK(int const *k, int const *numberOfRows);
 
+/**
+ *  Print the results
+ *
+ * @param rows
+ * @param dimensions
+ * @param k
+ * @param time
+ */
+void printResults(int const *rows, int const *dimensions, int const *k, double const time);
+
 int main(int argc, const char *argv[])
 {
     //used it to generate new random number each time
@@ -50,6 +60,10 @@ int main(int argc, const char *argv[])
     // Results
     int *clusters;
     double *centerRadius;
+
+    // Timer
+    clock_t timer;
+    double kMeansTime;
 
     countRowsCols(fileName, &numberOfRows, &numberOfColumns, separator);
 
@@ -97,11 +111,18 @@ int main(int argc, const char *argv[])
 
     readFile(fileName, rowPointer, separator);
 
+
+    timer = clock();
     clusters = run(rowPointer, &numberOfRows, &numberOfColumns, &k, centers);
+    timer = clock() - timer;
+
     centerRadius = radius(&k, rowPointer, centers, clusters, &numberOfRows, &numberOfColumns);
 
     writeClusters(rowPointer, &numberOfRows, &numberOfColumns, clusters, &k);
     writeCenters(&numberOfColumns, &k, centers, centerRadius);
+
+    kMeansTime = ((double)timer) / (CLOCKS_PER_SEC / 1000); // in milliseconds
+    printResults(&numberOfRows, &numberOfColumns, &k, kMeansTime);
 
     return 0;
 }
@@ -127,4 +148,12 @@ void validateK(int const *k, int const *numberOfRows)
         printf("K must be lower than items: %d \n", *numberOfRows);
         exit(0);
     }
+}
+
+void printResults(int const *rows, int const *dimensions, int const *k, double const time){
+    printf("------ K-means ------\n");
+    printf("Rows = %d\n", *rows);
+    printf("Columns = %d\n", *dimensions);
+    printf("Clusters = %d\n", *k);
+    printf("Clustering time = %10.4f ms\n", time);
 }
