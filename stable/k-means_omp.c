@@ -80,7 +80,7 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
 
     do {
         clusterChange = 0;
-        # pragma omp parallel for private(i, j, centerIndex, pointDistance, sumDistance, euclideanDistance, minDistance, cluster) shared(clusterChange, clusters, points)
+        # pragma omp parallel for private(i, j, centerIndex, pointDistance, sumDistance, euclideanDistance, minDistance, cluster) shared(clusterChange, clusters, points, centers)
         for (i = 0; i < *rows; i++) {
             minDistance = -1;
             cluster = 0;

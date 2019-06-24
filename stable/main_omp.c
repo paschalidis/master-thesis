@@ -4,6 +4,7 @@
 #include "file.h"
 #include "k-means.h"
 #include "time.h"
+#include "omp.h"
 
 #define DEFAULT_SEPARATOR " "
 #define K_ARGUMENT_INDEX 1
@@ -63,6 +64,7 @@ int main(int argc, const char *argv[])
 
     // Timer
     clock_t tic = clock();
+    double start_time = omp_get_wtime();
 
     countRowsCols(fileName, &numberOfRows, &numberOfColumns, separator);
 
@@ -117,9 +119,11 @@ int main(int argc, const char *argv[])
     writeCenters(&numberOfColumns, &k, centers, centerRadius);
 
     clock_t toc = clock();
+    double time = omp_get_wtime() - start_time;
 
     double totalTime = (double)(toc - tic) / CLOCKS_PER_SEC;
     printResults(&numberOfRows, &numberOfColumns, &k, totalTime);
+    printResults(&numberOfRows, &numberOfColumns, &k, time);
 
     return 0;
 }
@@ -152,5 +156,5 @@ void printResults(int const *rows, int const *dimensions, int const *k, double t
     printf("Rows = %d\n", *rows);
     printf("Columns = %d\n", *dimensions);
     printf("Clusters = %d\n", *k);
-    printf("Clustering time = %f mic\n", time);
+    printf("Clustering time = %f ms\n", time);
 }
