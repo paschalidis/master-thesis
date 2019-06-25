@@ -101,9 +101,8 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
                     cluster = centerIndex;
                 }
             }
-            if (clusters[i] != cluster) {
-                clusterChange = 1;
-            }
+
+            clusterChange |= (clusters[i] != cluster);
             clusters[i] = cluster;
         }
 
