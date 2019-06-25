@@ -34,16 +34,10 @@ void newCenters(double **points, const int *rows, int const *dimensions, int con
 
 int *run(double **points, int const *rows, int const *dimensions, int const *k, double **centers) {
     // indexes of row, dimension, center(k)
-    int i, j, centerIndex;
+    int i;
 
     // one dimensional array to store the cluster of each data row
     int *clusters;
-
-    // Distance values used to calculate Euclidean Distance
-    double minDistance, sumDistance, euclideanDistance, pointDistance;
-
-    // cluster found from Euclidean Distance
-    int cluster;
 
     // flag to repeat k-means process as one or more cluster has change
     int clusterChange;
@@ -80,21 +74,22 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
 
     do {
         clusterChange = 0;
-        # pragma omp parallel for private(i, j, centerIndex, pointDistance, sumDistance, euclideanDistance, minDistance, cluster) shared(clusterChange, clusters, points, centers)
+        # pragma omp parallel for private(i) shared(clusterChange, clusters, points, centers)
+
         for (i = 0; i < *rows; i++) {
-            minDistance = -1;
-            cluster = 0;
-            for (centerIndex = 0; centerIndex < *k; centerIndex++) {
-                sumDistance = 0;
-                for (j = 0; j < *dimensions; j++) {
+            double minDistance = -1;
+            int cluster = 0;
+            for (int centerIndex = 0; centerIndex < *k; centerIndex++) {
+                double sumDistance = 0;
+                for (int j = 0; j < *dimensions; j++) {
                     // Point distance from center
-                    pointDistance = points[i][j] - centers[centerIndex][j];
+                    double pointDistance = points[i][j] - centers[centerIndex][j];
                     // Power of pointDistance used to calculate Euclidean Distance
                     pointDistance = pointDistance * pointDistance;
                     // Add to sum
                     sumDistance = sumDistance + pointDistance;
                 }
-                euclideanDistance = sqrt(sumDistance);
+                double euclideanDistance = sqrt(sumDistance);
                 // Set first distance as min distance
                 if (minDistance == -1 || euclideanDistance < minDistance) {
                     minDistance = euclideanDistance;
