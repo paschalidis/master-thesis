@@ -32,9 +32,9 @@ void randomizeCenters(double **points, const int *rows, int const *dimensions, i
 void newCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers,
                 int const *clusters);
 
-int *run(double **points, int const *rows, int const *dimensions, int const *k, double **centers) {
+int *run(double **points, int const *rows, int const *dimensions, int const *k, double **centers, int *iterations) {
     // indexes of row, dimension, center(k)
-    int i;
+    int i, totalRuns = 0;
 
     // one dimensional array to store the cluster of each data row
     int *clusters;
@@ -72,42 +72,46 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
     // and update new center
     // re run all steps until there are no change to cluster
 
-    do {
-        clusterChange = 0;
-        # pragma omp parallel for private(i) shared(clusterChange, clusters, points, centers)
+    # pragma omp parallel shared(clusterChange, clusters, points, centers)
+    {
+        do {
+            clusterChange = 0;
+            # pragma omp parallel for private(i)
+            for (i = 0; i < *rows; i++) {
+                double minDistance = -1;
+                int cluster = 0;
+                for (int centerIndex = 0; centerIndex < *k; centerIndex++) {
+                    double sumDistance = 0;
+                    for (int j = 0; j < *dimensions; j++) {
+                        // Point distance from center
+                        double pointDistance = points[i][j] - centers[centerIndex][j];
+                        // Power of pointDistance used to calculate Euclidean Distance
+                        pointDistance = pointDistance * pointDistance;
+                        // Add to sum
+                        sumDistance = sumDistance + pointDistance;
+                    }
+                    double euclideanDistance = sqrt(sumDistance);
+                    // Set first distance as min distance
+                    if (minDistance == -1 || euclideanDistance < minDistance) {
+                        minDistance = euclideanDistance;
+                        cluster = centerIndex;
+                    }
+                }
 
-        for (i = 0; i < *rows; i++) {
-            double minDistance = -1;
-            int cluster = 0;
-            for (int centerIndex = 0; centerIndex < *k; centerIndex++) {
-                double sumDistance = 0;
-                for (int j = 0; j < *dimensions; j++) {
-                    // Point distance from center
-                    double pointDistance = points[i][j] - centers[centerIndex][j];
-                    // Power of pointDistance used to calculate Euclidean Distance
-                    pointDistance = pointDistance * pointDistance;
-                    // Add to sum
-                    sumDistance = sumDistance + pointDistance;
+                if (clusters[i] != cluster) {
+                    clusterChange = 1;
                 }
-                double euclideanDistance = sqrt(sumDistance);
-                // Set first distance as min distance
-                if (minDistance == -1 || euclideanDistance < minDistance) {
-                    minDistance = euclideanDistance;
-                    cluster = centerIndex;
-                }
+                clusters[i] = cluster;
             }
 
-            if (clusters[i] != cluster) {
-                clusterChange = 1;
+            if (clusterChange == 1) {
+                newCenters(points, rows, dimensions, k, centers, clusters);
             }
-            clusters[i] = cluster;
-        }
+            totalRuns ++;
+        } while (clusterChange == 1);
+    }
 
-        if (clusterChange == 1) {
-            newCenters(points, rows, dimensions, k, centers, clusters);
-        }
-    } while (clusterChange == 1);
-
+    *iterations = totalRuns;
     return clusters;
 }
 
@@ -246,4 +250,8 @@ double *radius(int const *k, double **points, double **centers, int const *clust
         radius[centerIndex] = maxDistance;
     } // for k
     return radius;
+}
+
+char *runMethod(){
+    return "omp";
 }

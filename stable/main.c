@@ -62,7 +62,7 @@ int main(int argc, const char *argv[])
     double *centerRadius;
 
     // Timer
-    clock_t tic = clock();
+    double totalTime;
 
     countRowsCols(fileName, &numberOfRows, &numberOfColumns, separator);
 
@@ -110,14 +110,11 @@ int main(int argc, const char *argv[])
 
     readFile(fileName, rowPointer, separator);
 
-    clusters = run(rowPointer, &numberOfRows, &numberOfColumns, &k, centers, &kmeansIterations);
+    clusters = run(rowPointer, &numberOfRows, &numberOfColumns, &k, centers, &kmeansIterations, &totalTime);
     centerRadius = radius(&k, rowPointer, centers, clusters, &numberOfRows, &numberOfColumns);
 
     writeClusters(rowPointer, &numberOfRows, &numberOfColumns, clusters, &k);
     writeCenters(&numberOfColumns, &k, centers, centerRadius);
-
-    clock_t toc = clock();
-    double totalTime = (double)(toc - tic) / CLOCKS_PER_SEC;
 
     writeResults(&k, totalTime, runMethod(), &numberOfRows, &numberOfColumns, fileName, &kmeansIterations);
 

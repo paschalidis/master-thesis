@@ -32,7 +32,7 @@ void randomizeCenters(double **points, const int *rows, int const *dimensions, i
 void newCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers,
                 int const *clusters);
 
-int *run(double **points, int const *rows, int const *dimensions, int const *k, double **centers, int *iterations) {
+int *run(double **points, int const *rows, int const *dimensions, int const *k, double **centers, int *iterations, double *time) {
     // indexes of row, dimension, center(k)
     int i, j, centerIndex, totalRuns = 0;
 
@@ -78,6 +78,8 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
     // and update new center
     // re run all steps until there are no change to cluster
 
+    // Timer
+    clock_t tic = clock();
     do {
         clusterChange = 0;
         for (i = 0; i < *rows; i++) {
@@ -111,6 +113,9 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
         }
         totalRuns ++;
     } while (clusterChange == 1);
+
+    clock_t toc = clock();
+    *time = (double)(toc - tic) / CLOCKS_PER_SEC;
 
     *iterations = totalRuns;
     return clusters;

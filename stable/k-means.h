@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include "time.h"
 
 /**
  *
@@ -14,9 +15,10 @@
  * @param k
  * @param centers
  * @param iterations
+ * @param time
  * @return
  */
-int *run(double **points, int const *rows, int const *dimensions, int const *k, double **centers, int *iterations);
+int *run(double **points, int const *rows, int const *dimensions, int const *k, double **centers, int *iterations, double *time);
 
 /**
  * Calculate radius for each center (max distance)
