@@ -19,19 +19,6 @@ void initializeClusters(int *clusters, int const *rows);
  */
 void randomizeCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers);
 
-/**
- * Calculate ner centers with average per cluster
- *
- * @param points
- * @param rows
- * @param dimensions
- * @param k
- * @param centers
- * @param clusters
- */
-void newCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers,
-                int const *clusters);
-
 int *run(double **points, int const *rows, int const *dimensions, int const *k, double **centers, int *iterations) {
     // indexes of row, dimension, center(k)
     int i, j, centerIndex, totalRuns = 0;
@@ -48,14 +35,54 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
     // flag to repeat k-means process as one or more cluster has change
     int clusterChange;
 
+    // one dimensional array to store total points per cluster
+    int *clusterItems;
+
+    // centers sums per column of k-means
+    double *centerSumPointer;
+    double **centersSum;
+
     // allocate memory for clusters
     clusters = malloc((*rows) * sizeof(int));
     if (clusters == NULL) {
         printf("\nFailure to allocate room for the clusters");
         exit(0);
     }
-    initializeClusters(clusters, rows);
 
+    clusterItems = malloc((*k) * sizeof(int));
+    if (clusterItems == NULL) {
+        printf("\nFailure to allocate room for the clusters items");
+        exit(0);
+    }
+
+    // allocate the memory for the center pointers
+    centerSumPointer = malloc((*k) * (*dimensions) * sizeof(double));
+    if (centerSumPointer == NULL)
+    {
+        printf("\nFailure to allocate room for the center sum pointers");
+        exit(0);
+    }
+    // allocate room for the pointers to the centers
+    centersSum = malloc((*k) * sizeof(double *));
+    if (centersSum == NULL)
+    {
+        printf("\nFailure to allocate room for center sum");
+        exit(0);
+    }
+    // point the pointers for centers
+    for (i = 0; i < *k; i++)
+    {
+        centersSum[i] = centerSumPointer + (i * (*dimensions));
+    }
+
+    for(i = 0; i <*k; i++){
+        clusterItems[i] = 0;
+        for (j = 0; j < *dimensions ; ++j) {
+            centersSum[i][j] = 0;
+        }
+    }
+
+    initializeClusters(clusters, rows);
     randomizeCenters(points, rows, dimensions, k, centers);
 
     // K-means steps
@@ -102,15 +129,36 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
                 }
             }
 
-            clusterChange |= (clusters[i] != cluster);
+            clusterChange = clusterChange || (clusters[i] != cluster);
             clusters[i] = cluster;
+
+            clusterItems[cluster]++;
+
+            for(j = 0; j < *dimensions; j++){
+                centersSum[cluster][j] = centersSum[cluster][j] + points[i][j];
+            }
         }
 
         if (clusterChange == 1) {
-            newCenters(points, rows, dimensions, k, centers, clusters);
+            // Average per column for new centers
+            for(centerIndex = 0; centerIndex < *k; centerIndex++) {
+                for (j = 0; j < *dimensions; j++) {
+                    if (clusterItems[centerIndex] > 0) {
+                        centers[centerIndex][j] = centersSum[centerIndex][j] / clusterItems[centerIndex];
+                    } else {
+                        centers[centerIndex][j] = 0;
+                    }
+                    centersSum[centerIndex][j] = 0;
+                }
+                clusterItems[centerIndex] = 0;
+            }
         }
         totalRuns ++;
     } while (clusterChange == 1);
+
+    free(clusterItems);
+    free(centersSum);
+    free(centerSumPointer);
 
     *iterations = totalRuns;
     return clusters;
@@ -172,39 +220,7 @@ void randomizeCenters(double **points, const int *rows, int const *dimensions, i
         }
         randomNumberRuns ++;
     } while (foundSameCenters == 1 && maxRuns > randomNumberRuns);
-}
-
-void newCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers,
-                int const *clusters) {
-    int column, cluster;
-    int clusterItems[*k];
-
-    // Initialize all center points
-    for (cluster = 0; cluster < *k; cluster++) {
-        for (column = 0; column < *dimensions; column++) {
-            centers[cluster][column] = 0;
-        }
-        clusterItems[cluster] = 0;
-    }
-
-    // Calculate sum per column and items found per cluster
-    for(cluster = 0; cluster < *rows; cluster++){
-        for(column = 0; column < *dimensions; column++){
-            centers[clusters[cluster]][column] = centers[clusters[cluster]][column] + points[cluster][column];
-        }
-        clusterItems[clusters[cluster]] = clusterItems[clusters[cluster]] + 1;
-    }
-
-    // Average per column for new centers
-    for(cluster = 0; cluster < *k; cluster++) {
-        for (column = 0; column < *dimensions; column++) {
-            if (clusterItems[cluster] > 0) {
-                centers[cluster][column] = centers[cluster][column] / clusterItems[cluster];
-            } else {
-                centers[cluster][column] = 0;
-            }
-        }
-    }
+    free(randomNumbers);
 }
 
 double *radius(int const *k, double **points, double **centers, int const *clusters, const int *rows,

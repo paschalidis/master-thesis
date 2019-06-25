@@ -6,6 +6,7 @@
 #include <string.h>
 
 #define FILE_NAME_CENTERS "centers"
+#define FILE_NAME_RESULTS "results"
 #define FILE_BUFFER_LENGTH 1024
 
 /**
@@ -49,4 +50,16 @@ void writeClusters(double **array, int const *rows, int const *cols, int const *
  */
 void writeCenters(int const *cols, int const *k, double **centers, double *centerRadius);
 
+/**
+ * Write results to file
+ *
+ * @param k
+ * @param time
+ * @param method
+ * @param rows
+ * @param cols
+ * @param fileName
+ * @param iterations
+ */
+void writeResults(int const *k, double time, char const *method, int const *rows, int const *cols, const char *fileName, int const *iterations);
 #endif

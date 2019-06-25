@@ -49,7 +49,7 @@ int main(int argc, const char *argv[])
     }
 
     // Points
-    int numberOfRows, numberOfColumns;
+    int numberOfRows, numberOfColumns, kmeansIterations;
     double *arrayPointer;
     double **rowPointer;
 
@@ -110,15 +110,17 @@ int main(int argc, const char *argv[])
 
     readFile(fileName, rowPointer, separator);
 
-    clusters = run(rowPointer, &numberOfRows, &numberOfColumns, &k, centers);
+    clusters = run(rowPointer, &numberOfRows, &numberOfColumns, &k, centers, &kmeansIterations);
     centerRadius = radius(&k, rowPointer, centers, clusters, &numberOfRows, &numberOfColumns);
 
     writeClusters(rowPointer, &numberOfRows, &numberOfColumns, clusters, &k);
     writeCenters(&numberOfColumns, &k, centers, centerRadius);
 
     clock_t toc = clock();
-
     double totalTime = (double)(toc - tic) / CLOCKS_PER_SEC;
+
+    writeResults(&k, totalTime, runMethod(), &numberOfRows, &numberOfColumns, fileName, &kmeansIterations);
+
     printResults(&numberOfRows, &numberOfColumns, &k, totalTime);
 
     return 0;

@@ -13,9 +13,10 @@
  * @param dimensions
  * @param k
  * @param centers
+ * @param iterations
  * @return
  */
-int *run(double **points, int const *rows, int const *dimensions, int const *k, double **centers);
+int *run(double **points, int const *rows, int const *dimensions, int const *k, double **centers, int *iterations);
 
 /**
  * Calculate radius for each center (max distance)
@@ -28,7 +29,8 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
  * @param dimensions
  * @return
  */
-double *
-radius(int const *k, double **points, double **centers, int const *clusters, const int *rows, const int *dimensions);
+double *radius(int const *k, double **points, double **centers, int const *clusters, const int *rows, const int *dimensions);
+
+char *runMethod();
 
 #endif

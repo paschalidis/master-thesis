@@ -100,3 +100,18 @@ void writeCenters(int const *cols, int const *k, double **centers, double *cente
     }
     fclose(fp);
 }
+
+void writeResults(int const *k, double time, char const *method, int const *rows, int const *cols, const char *fileName, int const *iterations)
+{
+    FILE *fp;
+    fp = fopen(FILE_NAME_RESULTS, "a");
+
+    if (fp == NULL) {
+        printf("\n file to write centers opening failed ");
+        exit(0);
+    }
+
+    fprintf(fp, "K-means = %s\tK = %d\tN = %d\tDimension = %d\tIterations = %d\tTime = %f sec\t\tFile = %s \n", method, *k, *rows, *cols, *iterations, time, fileName);
+
+    fclose(fp);
+}
