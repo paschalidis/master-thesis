@@ -1,0 +1,16 @@
+#!/bin/bash
+
+echo "Hello world"
+
+make seq seq2 omp
+cd exe/
+for i in {1..10}
+do
+    for k in 2 4 8 16 32; do
+        echo $k
+        ./k-means_seq $k ../data/random_data_10000
+        ./k-means_seq_v2 $k ../data/random_data_10000
+        //./k-means_omp $k ../data/random_data_1000
+    done
+done
+

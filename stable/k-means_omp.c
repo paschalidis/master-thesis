@@ -32,7 +32,7 @@ void randomizeCenters(double **points, const int *rows, int const *dimensions, i
 void newCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers,
                 int const *clusters);
 
-int *run(double **points, int const *rows, int const *dimensions, int const *k, double **centers, int *iterations) {
+int *run(double **points, int const *rows, int const *dimensions, int const *k, double **centers, int *iterations, double *time) {
     // indexes of row, dimension, center(k)
     int i, totalRuns = 0;
 
@@ -72,7 +72,9 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
     // and update new center
     // re run all steps until there are no change to cluster
 
-    # pragma omp parallel shared(clusterChange, clusters, points, centers)
+    double start_time = omp_get_wtime();
+
+    # pragma omp parallel shared(clusterChange, clusters, points, centers, totalRuns, rows, k, dimensions)
     {
         do {
             clusterChange = 0;
@@ -110,6 +112,9 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
             totalRuns ++;
         } while (clusterChange == 1);
     }
+
+    double end_time = omp_get_wtime();
+    *time = end_time - start_time;
 
     *iterations = totalRuns;
     return clusters;
