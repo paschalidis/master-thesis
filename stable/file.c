@@ -50,7 +50,7 @@ void countRowsCols(const char *fileName, int *rows, int *cols, const char *separ
 
 void writeClusters(double **array, int const *rows, int const *cols, int const *clusters, int const *k) {
     char clusterStr[9] = "cluster_";
-    char fileName[10], clusterNumber[2];
+    char fileName[12], clusterNumber[4];
     int row, column, cluster;
 
     // Clusters
