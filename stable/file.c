@@ -7,7 +7,7 @@ void readFile(const char *fileName, double **array, const char *separator) {
 
     FILE *fstream = fopen(fileName, "r");
     if (fstream == NULL) {
-        printf("\n file opening failed ");
+        printf("\n file %s opening failed ", fileName);
         exit(0);
     }
 
@@ -30,7 +30,7 @@ void countRowsCols(const char *fileName, int *rows, int *cols, const char *separ
 
     FILE *fstream = fopen(fileName, "r");
     if (fstream == NULL) {
-        printf("\n file opening failed ");
+        printf("\n file %s opening failed ", fileName);
         exit(0);
     }
 
@@ -63,7 +63,7 @@ void writeClusters(double **array, int const *rows, int const *cols, int const *
         FILE *fp;
         fp = fopen(fileName, "w");
         if (fp == NULL) {
-            printf("\n file to write results opening failed ");
+            printf("\n file %s opening failed ", fileName);
             exit(0);
         }
 
@@ -86,7 +86,7 @@ void writeCenters(int const *cols, int const *k, double **centers, double *cente
     FILE *fp;
     fp = fopen(FILE_NAME_CENTERS, "w");
     if (fp == NULL) {
-        printf("\n file to write centers opening failed ");
+        printf("\n file %s opening failed ", FILE_NAME_CENTERS);
         exit(0);
     }
 
@@ -103,15 +103,20 @@ void writeCenters(int const *cols, int const *k, double **centers, double *cente
 
 void writeResults(int const *k, double time, char const *method, int const *rows, int const *cols, const char *fileName, int const *iterations)
 {
-    FILE *fp;
-    fp = fopen(FILE_NAME_RESULTS, "a");
-
+    FILE *fp, *fplog;
+    fp = fopen(FILE_NAME_RESULTS, "w");
+    fplog = fopen(FILE_NAME_RESULTS_LOG, "a");
     if (fp == NULL) {
-        printf("\n file to write centers opening failed ");
+        printf("\n file %s opening failed ", FILE_NAME_RESULTS);
         exit(0);
     }
-
+    if (fplog == NULL) {
+        printf("\n file %s opening failed ", FILE_NAME_RESULTS_LOG);
+        exit(0);
+    }
     fprintf(fp, "K-means = %s\tK = %d\tN = %d\tDimension = %d\tIterations = %d\tTime = %f sec\t\tFile = %s \n", method, *k, *rows, *cols, *iterations, time, fileName);
+    fprintf(fplog, "K-means = %s\tK = %d\tN = %d\tDimension = %d\tIterations = %d\tTime = %f sec\t\tFile = %s \n", method, *k, *rows, *cols, *iterations, time, fileName);
 
     fclose(fp);
+    fclose(fplog);
 }

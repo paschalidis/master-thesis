@@ -31,7 +31,7 @@ void validateK(int const *k, int const *numberOfRows);
  * @param k
  * @param time
  */
-void printResults(int const *rows, int const *dimensions, int const *k, double time);
+void printResults(int const *k, double time, char const *method, int const *rows, int const *cols, const char *fileName, int const *iterations);
 
 int main(int argc, const char *argv[])
 {
@@ -118,7 +118,7 @@ int main(int argc, const char *argv[])
 
     writeResults(&k, totalTime, runMethod(), &numberOfRows, &numberOfColumns, fileName, &kmeansIterations);
 
-    printResults(&numberOfRows, &numberOfColumns, &k, totalTime);
+    printResults(&k, totalTime, runMethod(), &numberOfRows, &numberOfColumns, fileName, &kmeansIterations);
 
     return 0;
 }
@@ -146,10 +146,6 @@ void validateK(int const *k, int const *numberOfRows)
     }
 }
 
-void printResults(int const *rows, int const *dimensions, int const *k, double time){
-    printf("------ K-means ------\n");
-    printf("Rows = %d\n", *rows);
-    printf("Columns = %d\n", *dimensions);
-    printf("Clusters = %d\n", *k);
-    printf("Clustering time = %f mic\n", time);
+void printResults(int const *k, double time, char const *method, int const *rows, int const *cols, const char *fileName, int const *iterations){
+    printf("K-means = %s\tK = %d\tN = %d\tDimension = %d\tIterations = %d\tTime = %f sec\t\tFile = %s \n", method, *k, *rows, *cols, *iterations, time, fileName);
 }

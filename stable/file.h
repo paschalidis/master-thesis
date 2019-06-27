@@ -7,6 +7,7 @@
 
 #define FILE_NAME_CENTERS "centers"
 #define FILE_NAME_RESULTS "results"
+#define FILE_NAME_RESULTS_LOG "results_log"
 #define FILE_BUFFER_LENGTH 1024
 
 /**

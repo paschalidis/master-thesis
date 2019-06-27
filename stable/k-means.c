@@ -104,7 +104,7 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
                 }
             }
 
-            clusterChange |= (clusters[i] != cluster);
+            clusterChange = clusterChange || (clusters[i] != cluster);
             clusters[i] = cluster;
         }
 
