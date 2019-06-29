@@ -120,3 +120,48 @@ void writeResults(int const *k, double time, char const *method, int const *rows
     fclose(fp);
     fclose(fplog);
 }
+
+int fileExist(const char *fileName)
+{
+    if( access( fileName, F_OK ) != -1 ) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+void readRandomRowFile(const char *fileName, int *array)
+{
+    char buffer[FILE_BUFFER_LENGTH];
+    char *line, *record;
+    int i = 0;
+
+    FILE *fstream = fopen(fileName, "r");
+    if (fstream == NULL) {
+        printf("\n file %s opening failed ", fileName);
+        exit(0);
+    }
+
+    while ((line = fgets(buffer, sizeof(buffer), fstream)) != NULL) {
+        record = strtok(line, "");
+        array[i] = atoi(record);
+        i++;
+    }
+    fclose(fstream);
+}
+
+void writeRandomRowFile(int const *array, const char *fileName, int const *k)
+{
+    FILE *fp;
+    fp = fopen(fileName, "w");
+    if (fp == NULL) {
+        printf("\n file %s opening failed ", fileName);
+        exit(0);
+    }
+
+    for(int i = 0; i < *k; i ++){
+        fprintf(fp, "%d\n", array[i]);
+    }
+
+    fclose(fp);
+}

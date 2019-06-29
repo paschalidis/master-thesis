@@ -33,6 +33,29 @@ void validateK(int const *k, int const *numberOfRows);
  */
 void printResults(int const *k, double time, char const *method, int const *rows, int const *cols, const char *fileName, int const *iterations);
 
+/**
+ * Randomize Centers of K-means for first run
+ *
+ * @param points
+ * @param rows
+ * @param dimensions
+ * @param k
+ * @param centers
+ * @param fileName
+ */
+void randomizeCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers, const char *fileName);
+
+/**
+ *
+ * @param points
+ * @param rows
+ * @param dimensions
+ * @param k
+ * @param centers
+ * @param fileName
+ */
+void initializeCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers, const char *fileName);
+
 int main(int argc, const char *argv[])
 {
     //used it to generate new random number each time
@@ -110,6 +133,8 @@ int main(int argc, const char *argv[])
 
     readFile(fileName, rowPointer, separator);
 
+    initializeCenters(rowPointer, &numberOfRows, &numberOfColumns, &k, centers, fileName);
+
     clusters = run(rowPointer, &numberOfRows, &numberOfColumns, &k, centers, &kmeansIterations, &totalTime);
     centerRadius = radius(&k, rowPointer, centers, clusters, &numberOfRows, &numberOfColumns);
 
@@ -148,4 +173,92 @@ void validateK(int const *k, int const *numberOfRows)
 
 void printResults(int const *k, double time, char const *method, int const *rows, int const *cols, const char *fileName, int const *iterations){
     printf("K-means = %s\tK = %d\tN = %d\tDimension = %d\tIterations = %d\tTime = %f sec\t\tFile = %s \n", method, *k, *rows, *cols, *iterations, time, fileName);
+}
+
+void initializeCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers, const char *fileName) {
+    char randomRowName[15] = FILE_RANDOM_ROWS;
+    char randomRowFileName[100], k_String[5];
+
+    sprintf(k_String, "%d", *k);
+    strcpy(randomRowFileName, randomRowName);
+    strcat(randomRowFileName, k_String);
+    strcat(randomRowFileName, "_");
+    strcat(randomRowFileName, fileName);
+
+    if (fileExist(randomRowFileName)){
+        int *randomRows;
+
+        // allocate memory for clusters
+        randomRows = malloc((*rows) * sizeof(int));
+        if (randomRows == NULL) {
+            printf("\nFailure to allocate room for the clusters");
+            exit(0);
+        }
+
+        readRandomRowFile(randomRowFileName, randomRows);
+
+        for(int i = 0; i < *k; i++) {
+            // Store points to centers
+            for (int j = 0; j < *dimensions; j++) {
+                centers[i][j] = points[randomRows[i]][j];
+            }
+        }
+    } else {
+        randomizeCenters(points, rows, dimensions, k, centers, randomRowFileName);
+    }
+}
+
+void randomizeCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers, const char *fileName) {
+    int *randomNumbers;
+    int i, j, dimension; // Indexes
+    int randomNumber; // Random Number
+    int foundSameRandomNumbers, foundSameCenters, foundSameDimension; // Flag for same data
+
+    int maxRuns = 5; // Flag set to 5 because if you cant find different point number then data have many duplicates
+    int randomNumberRuns = 0;
+
+    // allocate memory for random numbers
+    randomNumbers = malloc((*k) * sizeof(int));
+    if (randomNumbers == NULL) {
+        printf("\nFailure to allocate room for the random numbers");
+        exit(0);
+    }
+
+    do{
+
+        for(i = 0; i < *k; i++) {
+            // Make random numbers from rows
+            do {
+                foundSameRandomNumbers = 0;
+                randomNumber = rand() % *rows;
+                for (j = i; j > 0; j--) {
+                    if (randomNumbers[j - 1] == randomNumber) {
+                        foundSameRandomNumbers = 1;
+                    }
+                }
+            } while (foundSameRandomNumbers == 1);
+            randomNumbers[i] = randomNumber;
+
+            // Store points to centers
+            for (j = 0; j < *dimensions; j++) {
+                centers[i][j] = points[randomNumber][j];
+            }
+        }
+
+        // Check for same centers - duplicate data
+        foundSameCenters = 0;
+        for(i = 0; i < *k; i++){
+            for(j = *k -1; j > i; j--){
+                foundSameDimension = 1;
+                for(dimension = 0; dimension < *dimensions; dimension++){
+                    foundSameDimension = foundSameDimension && (centers[i][dimension] == centers[j][dimension]);
+                }
+                foundSameCenters = foundSameCenters || foundSameDimension;
+            }
+        }
+        randomNumberRuns ++;
+    } while (foundSameCenters == 1 && maxRuns > randomNumberRuns);
+
+    writeRandomRowFile(randomNumbers, fileName, k);
+    free(randomNumbers);
 }

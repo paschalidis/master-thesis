@@ -8,17 +8,6 @@
  */
 void initializeClusters(int *clusters, int const *rows);
 
-/**
- * Randomize Centers of K-means for first run
- *
- * @param points
- * @param rows
- * @param dimensions
- * @param k
- * @param centers
- */
-void randomizeCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers);
-
 int *run(double **points, int const *rows, int const *dimensions, int const *k, double **centers, int *iterations, double *time) {
     // indexes of row, dimension, center(k)
     int i, j, centerIndex, totalRuns = 0;
@@ -83,7 +72,7 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
     }
 
     initializeClusters(clusters, rows);
-    randomizeCenters(points, rows, dimensions, k, centers);
+    //randomizeCenters(points, rows, dimensions, k, centers);
 
     // K-means steps
     // While you have change in clusters continue
@@ -173,59 +162,6 @@ void initializeClusters(int *clusters, int const *rows) {
     for (int i = 0; i < *rows; i++) {
         clusters[i] = 0;
     }
-}
-
-void randomizeCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers) {
-    int *randomNumbers;
-    int i, j, dimension; // Indexes
-    int randomNumber; // Random Number
-    int foundSameRandomNumbers, foundSameCenters, foundSameDimension; // Flag for same data
-
-    int maxRuns = 5; // Flag set to 5 because if you cant find different point number then data have many duplicates
-    int randomNumberRuns = 0;
-
-    // allocate memory for random numbers
-    randomNumbers = malloc((*k) * sizeof(int));
-    if (randomNumbers == NULL) {
-        printf("\nFailure to allocate room for the random numbers");
-        exit(0);
-    }
-
-    do{
-
-        for(i = 0; i < *k; i++) {
-            // Make random numbers from rows
-            do {
-                foundSameRandomNumbers = 0;
-                randomNumber = rand() % *rows;
-                for (j = i; j > 0; j--) {
-                    if (randomNumbers[j - 1] == randomNumber) {
-                        foundSameRandomNumbers = 1;
-                    }
-                }
-            } while (foundSameRandomNumbers == 1);
-            randomNumbers[i] = randomNumber;
-
-            // Store points to centers
-            for (j = 0; j < *dimensions; j++) {
-                centers[i][j] = points[randomNumber][j];
-            }
-        }
-
-        // Check for same centers - duplicate data
-        foundSameCenters = 0;
-        for(i = 0; i < *k; i++){
-            for(j = *k -1; j > i; j--){
-                foundSameDimension = 1;
-                for(dimension = 0; dimension < *dimensions; dimension++){
-                    foundSameDimension = foundSameDimension && (centers[i][dimension] == centers[j][dimension]);
-                }
-                foundSameCenters = foundSameCenters || foundSameDimension;
-            }
-        }
-        randomNumberRuns ++;
-    } while (foundSameCenters == 1 && maxRuns > randomNumberRuns);
-    free(randomNumbers);
 }
 
 double *radius(int const *k, double **points, double **centers, int const *clusters, const int *rows,

@@ -4,10 +4,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <io.h>
 
 #define FILE_NAME_CENTERS "centers"
 #define FILE_NAME_RESULTS "results"
 #define FILE_NAME_RESULTS_LOG "results_log"
+#define FILE_RANDOM_ROWS "random_rows_";
 #define FILE_BUFFER_LENGTH 1024
 
 /**
@@ -63,4 +65,26 @@ void writeCenters(int const *cols, int const *k, double **centers, double *cente
  * @param iterations
  */
 void writeResults(int const *k, double time, char const *method, int const *rows, int const *cols, const char *fileName, int const *iterations);
+
+/**
+ *
+ * @param fileName
+ * @return 1 if file exist 0 if not
+ */
+int fileExist(const char *fileName);
+
+/**
+ * Read the file with random row data used for initialize centers
+ *
+ * @param fileName
+ * @param array
+ */
+void readRandomRowFile(const char *fileName, int *array);
+
+/**
+ *
+ * @param array
+ * @param fileName
+ */
+void writeRandomRowFile(int const *array, const char *fileName, int const *k);
 #endif
