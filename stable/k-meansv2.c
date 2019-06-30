@@ -132,7 +132,7 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
 
         if (clusterChange == 1) {
             // Average per column for new centers
-            for(centerIndex = 0; centerIndex < *k; centerIndex++) {
+            for (centerIndex = 0; centerIndex < *k; centerIndex++) {
                 for (j = 0; j < *dimensions; j++) {
                     if (clusterItems[centerIndex] > 0) {
                         centers[centerIndex][j] = centersSum[centerIndex][j] / clusterItems[centerIndex];

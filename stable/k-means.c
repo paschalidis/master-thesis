@@ -93,7 +93,6 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
 
             clusterChange = clusterChange || (clusters[i] != cluster);
             clusters[i] = cluster;
-            clusterItems[cluster]++;
         }
 
         if (clusterChange == 1) {
@@ -117,6 +116,7 @@ void newCenters(double **points, const int *rows, int const *dimensions, int con
         for (column = 0; column < *dimensions; column++) {
             centers[cluster][column] = 0;
         }
+        clusterItems[cluster] = 0;
     }
 
     // Calculate sum per column and items found per cluster
@@ -124,6 +124,7 @@ void newCenters(double **points, const int *rows, int const *dimensions, int con
         for(column = 0; column < *dimensions; column++){
             centers[clusters[cluster]][column] = centers[clusters[cluster]][column] + points[cluster][column];
         }
+        clusterItems[clusters[cluster]]++;
     }
 
     // Average per column for new centers
