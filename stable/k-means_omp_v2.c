@@ -1,13 +1,5 @@
 #include "k-means.h"
 
-/**
- * Set cluster to default value for first run
- *
- * @param clusters
- * @param rows
- */
-void initializeClusters(int *clusters, int const *rows);
-
 int *run(double **points, int const *rows, int const *dimensions, int const *k, double **centers, int *iterations, double *time) {
     // indexes of row, dimension, center(k)
     int i, j, centerIndex, totalRuns = 0;
@@ -32,27 +24,28 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
     double **centersSum;
 
     // allocate memory for clusters
-    clusters = malloc((*rows) * sizeof(int));
+    clusters = calloc(*rows, sizeof(int));
     if (clusters == NULL) {
         printf("\nFailure to allocate room for the clusters");
         exit(0);
     }
 
-    clusterItems = malloc((*k) * sizeof(int));
+    clusterItems = calloc(*k, sizeof(int));
     if (clusterItems == NULL) {
         printf("\nFailure to allocate room for the clusters items");
         exit(0);
     }
 
-    // allocate the memory for the center pointers
-    centerSumPointer = malloc((*k) * (*dimensions) * sizeof(double));
+    // allocate the memory for the center sum pointers
+    centerSumPointer = calloc(*k * *dimensions, sizeof(double));
     if (centerSumPointer == NULL)
     {
         printf("\nFailure to allocate room for the center sum pointers");
         exit(0);
     }
-    // allocate room for the pointers to the centers
+    // allocate room for the pointers to the centers sum
     centersSum = malloc((*k) * sizeof(double *));
+    //centersSum = calloc(*k, sizeof(double *));
     if (centersSum == NULL)
     {
         printf("\nFailure to allocate room for center sum");
@@ -63,16 +56,6 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
     {
         centersSum[i] = centerSumPointer + (i * (*dimensions));
     }
-
-    for(i = 0; i <*k; i++){
-        clusterItems[i] = 0;
-        for (j = 0; j < *dimensions ; ++j) {
-            centersSum[i][j] = 0;
-        }
-    }
-
-    initializeClusters(clusters, rows);
-    //randomizeCenters(points, rows, dimensions, k, centers);
 
     // K-means steps
     // While you have change in clusters continue
@@ -123,14 +106,18 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
             clusterChange = clusterChange || (clusters[i] != cluster);
             clusters[i] = cluster;
 
+            //todo this must be local per thread
             clusterItems[cluster]++;
 
             for(j = 0; j < *dimensions; j++){
+                //todo this must be local per thread
                 centersSum[cluster][j] = centersSum[cluster][j] + points[i][j];
             }
         }
 
         if (clusterChange == 1) {
+            //todo reduction all local thread vars to main thread
+
             // Average per column for new centers
             for (centerIndex = 0; centerIndex < *k; centerIndex++) {
                 for (j = 0; j < *dimensions; j++) {
@@ -156,12 +143,6 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
 
     *iterations = totalRuns;
     return clusters;
-}
-
-void initializeClusters(int *clusters, int const *rows) {
-    for (int i = 0; i < *rows; i++) {
-        clusters[i] = 0;
-    }
 }
 
 double *radius(int const *k, double **points, double **centers, int const *clusters, const int *rows,
@@ -204,5 +185,5 @@ double *radius(int const *k, double **points, double **centers, int const *clust
 }
 
 char *runMethod(){
-    return "sequential_v2";
+    return "omp_v2";
 }
