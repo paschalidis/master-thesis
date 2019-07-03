@@ -2,16 +2,10 @@
 
 int *run(double **points, int const *rows, int const *dimensions, int const *k, double **centers, int *iterations, double *time) {
     // indexes of row, dimension, center(k)
-    int i, j, centerIndex, totalRuns = 0;
+    int totalRuns = 0;
 
     // one dimensional array to store the cluster of each data row
     int *clusters;
-
-    // Distance values used to calculate Euclidean Distance
-    double minDistance, sumDistance, euclideanDistance, pointDistance;
-
-    // cluster found from Euclidean Distance
-    int cluster;
 
     // flag to repeat k-means process as one or more cluster has change
     int clusterChange;
@@ -61,7 +55,7 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
         exit(0);
     }
     // point the pointers for centers
-    for (i = 0; i < *k; i++)
+    for (int i = 0; i < *k; i++)
     {
         centersSum[i] = centerSumPointer + (i * (*dimensions));
     }
@@ -83,7 +77,7 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
     }
 
     // point the pointers for thread cluster items
-    for (i = 0; i < numberOfThreads; i++)
+    for (int i = 0; i < numberOfThreads; i++)
     {
         threadClusterItems[i] = threadClusterItemsPointer + (i * (*k));
     }
@@ -96,7 +90,7 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
         exit(0);
     }
 
-    for(i = 0; i < numberOfThreads; i++)
+    for(int i = 0; i < numberOfThreads; i++)
     {
         threadCentersSum[i] = malloc(*k * sizeof(double *));
         if(threadCentersSum[i] == NULL)
@@ -105,7 +99,7 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
             exit(0);
         }
 
-        for(j = 0; j < *k; j++)
+        for(int j = 0; j < *k; j++)
         {
             threadCentersSum[i][j] = calloc(*dimensions, sizeof(double));
             if(threadCentersSum[i][j] == NULL)
@@ -115,89 +109,6 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
             }
         }
     }
-
-    // add cluster
-    for(i = 0; i < *rows; i = i + 2)
-    {
-        clusters[i] = 1;
-    }
-
-    //print current centers
-    for(i = 0; i < *k; i ++)
-    {
-        for(j = 0; j < *dimensions; j++)
-        {
-            printf("Center sum [%d][%d] = %f\n", i, j, centersSum[i][j]);
-        }
-    }
-
-    //sus per column
-    for(i = 0; i < *rows; i++)
-    {
-        for(j = 0; j < *dimensions; j++)
-        {
-            centersSum[clusters[i]][j] += points[i][j];
-        }
-    }
-
-    //print current centers
-    for(i = 0; i < *k; i ++)
-    {
-        for(j = 0; j < *dimensions; j++)
-        {
-            printf("Center sum [%d][%d] = %f\n", i, j, centersSum[i][j]);
-            centersSum[i][j] = 0;
-        }
-    }
-
-    //sus per column
-    #pragma omp parallel for private(i, j) shared(threadCentersSum, points, rows, dimensions)
-    for(i = 0; i < *rows; i++)
-    {
-        for(j = 0; j < *dimensions; j++)
-        {
-            threadCentersSum[omp_get_thread_num()][clusters[i]][j] += points[i][j];
-        }
-    }
-
-//    for(i = 0; i < numberOfThreads; i++){
-//        for(j = 0; j < *k; j++){
-//            for(int z = 0; z < *dimensions; z++){
-//                printf("Thread Center Sum [%d][%d][%d] = %f\n", i, j, z, threadCentersSum[i][j][z]);
-//            }
-//        }
-//    }
-
-    for(i = 0; i < numberOfThreads; i++)
-    {
-        for(j = 0; j < *k; j++)
-        {
-            clusterItems[j] += threadClusterItems[i][j];
-            for(int z = 0; z < *dimensions; z++)
-            {
-                centersSum[j][z] += threadCentersSum[i][j][z];
-            }
-        }
-    }
-
-    for(i = 0; i < *k; i ++)
-    {
-        for(j = 0; j < *dimensions; j++)
-        {
-            printf("Center sum [%d][%d] = %f\n", i, j, centersSum[i][j]);
-            centersSum[i][j] = 0;
-        }
-    }
-//    exit(1);
-//    for(i = 0; i < numberOfThreads; i++){
-//        for(j = 0; j < *k; j++){
-//            for(int z = 0; z < *dimensions; z++){
-//                printf("Thread Center Sum [%d][%d][%d] = %d\n", i, j, z, threadCentersSum[i][j][z]);
-//            }
-//        }
-//    }
-//
-//    exit(1);
 
     // K-means steps
     // While you have change in clusters continue
@@ -220,24 +131,25 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
     // re run all steps until there are no change to cluster
 
     // Timer
-    clock_t tic = clock();
+    double start_time = omp_get_wtime();
     do {
         clusterChange = 0;
-        for (i = 0; i < *rows; i++) {
-            minDistance = -1;
-            cluster = 0;
-            for (centerIndex = 0; centerIndex < *k; centerIndex++) {
-                sumDistance = 0;
-                for (j = 0; j < *dimensions; j++) {
+        # pragma omp parallel for shared(clusters, points, centers, rows, k, dimensions, threadClusterItems, threadCentersSum) reduction(||:clusterChange) default(none) schedule(static)
+        for (int i = 0; i < *rows; i++) {
+            double minDistance = -1;
+            int cluster = 0;
+            for (int centerIndex = 0; centerIndex < *k; centerIndex++) {
+                double sumDistance = 0;
+                for (int j = 0; j < *dimensions; j++) {
                     // Point distance from center
-                    pointDistance = points[i][j] - centers[centerIndex][j];
+                    double pointDistance = points[i][j] - centers[centerIndex][j];
                     // Power of pointDistance used to calculate Euclidean Distance
                     pointDistance = pointDistance * pointDistance;
                     // Add to sum
                     sumDistance = sumDistance + pointDistance;
 
                 }
-                euclideanDistance = sqrt(sumDistance);
+                double euclideanDistance = sqrt(sumDistance);
                 // Set first distance as min distance
                 if (minDistance == -1 || euclideanDistance < minDistance) {
                     minDistance = euclideanDistance;
@@ -247,26 +159,18 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
 
             clusterChange = clusterChange || (clusters[i] != cluster);
             clusters[i] = cluster;
+            threadClusterItems[omp_get_thread_num()][clusters[i]] ++;
 
-            //todo this must be local per thread
-            clusterItems[cluster]++;
-            // todo done
-            //threadClusterItems[omp_get_thread_num()][clusters[i]] ++;
-
-            for(j = 0; j < *dimensions; j++){
-                //todo this must be local per thread
-                centersSum[cluster][j] = centersSum[cluster][j] + points[i][j];
-                //todo done
-                //threadCentersSum[omp_get_thread_num()][clusters[i]][j] += points[i][j];
+            for(int j = 0; j < *dimensions; j++){
+                threadCentersSum[omp_get_thread_num()][clusters[i]][j] += points[i][j];
             }
         }
 
         if (clusterChange == 1) {
-            //todo reduction all local thread vars to main thread
-            //todo 1 done The main thread reduction the sums
-            for(i = 0; i < numberOfThreads; i++)
+            // main thread reduction all cluster items and center sums per thread
+            for(int i = 0; i < numberOfThreads; i++)
             {
-                for(j = 0; j < *k; j++)
+                for(int j = 0; j < *k; j++)
                 {
                     clusterItems[j] += threadClusterItems[i][j];
                     for(int z = 0; z < *dimensions; z++)
@@ -277,17 +181,10 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
                     threadClusterItems[i][j] = 0;
                 }
             }
-//            for(i = 0; i < numberOfThreads; i++)
-//            {
-//                for(j = 0; j < *k; j++)
-//                {
-//                    clusterItems[j] += threadClusterItems[i][j];
-//                }
-//            }
 
             // Average per column for new centers
-            for (centerIndex = 0; centerIndex < *k; centerIndex++) {
-                for (j = 0; j < *dimensions; j++) {
+            for (int centerIndex = 0; centerIndex < *k; centerIndex++) {
+                for (int j = 0; j < *dimensions; j++) {
                     if (clusterItems[centerIndex] > 0) {
                         centers[centerIndex][j] = centersSum[centerIndex][j] / clusterItems[centerIndex];
                     } else {
@@ -301,8 +198,8 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
         totalRuns ++;
     } while (clusterChange == 1);
 
-    clock_t toc = clock();
-    *time = (double)(toc - tic) / CLOCKS_PER_SEC;
+    double end_time = omp_get_wtime();
+    *time = end_time - start_time;
 
     free(clusterItems);
     free(centersSum);

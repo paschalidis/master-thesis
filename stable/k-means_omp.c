@@ -56,7 +56,7 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
 
     do {
         clusterChange = 0;
-        # pragma omp parallel for shared(clusters, points, centers, totalRuns, rows, k, dimensions) reduction(||:clusterChange) default(none) schedule(static)
+        # pragma omp parallel for shared(clusters, points, centers, rows, k, dimensions) reduction(||:clusterChange) default(none) schedule(static)
         for (int i = 0; i < *rows; i++) {
             double minDistance = -1;
             int cluster = 0;
