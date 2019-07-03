@@ -116,6 +116,79 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
         }
     }
 
+    // add cluster
+    for(i = 0; i < *rows; i = i + 2)
+    {
+        clusters[i] = 1;
+    }
+
+    //print current centers
+    for(i = 0; i < *k; i ++)
+    {
+        for(j = 0; j < *dimensions; j++)
+        {
+            printf("Center sum [%d][%d] = %f\n", i, j, centersSum[i][j]);
+        }
+    }
+
+    //sus per column
+    for(i = 0; i < *rows; i++)
+    {
+        for(j = 0; j < *dimensions; j++)
+        {
+            centersSum[clusters[i]][j] += points[i][j];
+        }
+    }
+
+    //print current centers
+    for(i = 0; i < *k; i ++)
+    {
+        for(j = 0; j < *dimensions; j++)
+        {
+            printf("Center sum [%d][%d] = %f\n", i, j, centersSum[i][j]);
+            centersSum[i][j] = 0;
+        }
+    }
+
+    //sus per column
+    #pragma omp parallel for private(i, j) shared(threadCentersSum, points, rows, dimensions)
+    for(i = 0; i < *rows; i++)
+    {
+        for(j = 0; j < *dimensions; j++)
+        {
+            threadCentersSum[omp_get_thread_num()][clusters[i]][j] += points[i][j];
+        }
+    }
+
+//    for(i = 0; i < numberOfThreads; i++){
+//        for(j = 0; j < *k; j++){
+//            for(int z = 0; z < *dimensions; z++){
+//                printf("Thread Center Sum [%d][%d][%d] = %f\n", i, j, z, threadCentersSum[i][j][z]);
+//            }
+//        }
+//    }
+
+    for(i = 0; i < numberOfThreads; i++)
+    {
+        for(j = 0; j < *k; j++)
+        {
+            clusterItems[j] += threadClusterItems[i][j];
+            for(int z = 0; z < *dimensions; z++)
+            {
+                centersSum[j][z] += threadCentersSum[i][j][z];
+            }
+        }
+    }
+
+    for(i = 0; i < *k; i ++)
+    {
+        for(j = 0; j < *dimensions; j++)
+        {
+            printf("Center sum [%d][%d] = %f\n", i, j, centersSum[i][j]);
+            centersSum[i][j] = 0;
+        }
+    }
+//    exit(1);
 //    for(i = 0; i < numberOfThreads; i++){
 //        for(j = 0; j < *k; j++){
 //            for(int z = 0; z < *dimensions; z++){
@@ -183,12 +256,27 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
             for(j = 0; j < *dimensions; j++){
                 //todo this must be local per thread
                 centersSum[cluster][j] = centersSum[cluster][j] + points[i][j];
+                //todo done
+                //threadCentersSum[omp_get_thread_num()][clusters[i]][j] += points[i][j];
             }
         }
 
         if (clusterChange == 1) {
             //todo reduction all local thread vars to main thread
             //todo 1 done The main thread reduction the sums
+            for(i = 0; i < numberOfThreads; i++)
+            {
+                for(j = 0; j < *k; j++)
+                {
+                    clusterItems[j] += threadClusterItems[i][j];
+                    for(int z = 0; z < *dimensions; z++)
+                    {
+                        centersSum[j][z] += threadCentersSum[i][j][z];
+                        threadCentersSum[i][j][z] = 0;
+                    }
+                    threadClusterItems[i][j] = 0;
+                }
+            }
 //            for(i = 0; i < numberOfThreads; i++)
 //            {
 //                for(j = 0; j < *k; j++)
