@@ -30,8 +30,7 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
     // two dimension array to store cluster items per thread [noThread][noCluster]
     int **threadClusterItems;
 
-    double *threadCentersSumPointer;
-    // threed dimension array to store center sums per thread
+    // three dimension array to store center sums per thread
     double ***threadCentersSum;
 
     // allocate memory for clusters
@@ -89,15 +88,6 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
         threadClusterItems[i] = threadClusterItemsPointer + (i * (*k));
     }
 
-    // allocate the memory for the thread center sum pointers
-    //threadCentersSumPointer = malloc(numberOfThreads * (*k) * (*dimensions) * sizeof(double));
-    threadCentersSumPointer = calloc(numberOfThreads * (*k) * (*dimensions), sizeof(double));
-    if (threadCentersSumPointer == NULL)
-    {
-        printf("\nFailure to allocate room for the thread center sum pointers");
-        exit(0);
-    }
-
     // allocate room for the pointers to the thread centers sum
     threadCentersSum = malloc(*dimensions * sizeof(double **));
     if (threadCentersSum == NULL)
@@ -106,19 +96,23 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
         exit(0);
     }
 
-    for(i = 0; i < *dimensions; i++)
+    for(i = 0; i < numberOfThreads; i++)
     {
-        // allocate room fot the pointers to the thread centers sum 2
         threadCentersSum[i] = malloc(*k * sizeof(double *));
-        if (threadCentersSum[i] == NULL)
+        if(threadCentersSum[i] == NULL)
         {
-            printf("\nFailure to allocate room for the thread centers sum %d", i);
+            printf("\nFailure to allocate room for the thread centers sum");
             exit(0);
         }
-        // point the pointers
+
         for(j = 0; j < *k; j++)
         {
-            threadCentersSum[i][j] = threadCentersSumPointer + (i * (numberOfThreads * (*k)) + j * numberOfThreads);
+            threadCentersSum[i][j] = calloc(*dimensions, sizeof(double));
+            if(threadCentersSum[i][j] == NULL)
+            {
+                printf("\nFailure to allocate room for the thread centers sum");
+                exit(0);
+            }
         }
     }
 
