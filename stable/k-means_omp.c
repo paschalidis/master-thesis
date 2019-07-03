@@ -1,25 +1,6 @@
 #include "k-means.h"
 
 /**
- * Set cluster to default value for first run
- *
- * @param clusters
- * @param rows
- */
-void initializeClusters(int *clusters, int const *rows);
-
-/**
- * Randomize Centers of K-means for first run
- *
- * @param points
- * @param rows
- * @param dimensions
- * @param k
- * @param centers
- */
-void randomizeCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers);
-
-/**
  * Calculate ner centers with average per cluster
  *
  * @param points
@@ -32,9 +13,10 @@ void randomizeCenters(double **points, const int *rows, int const *dimensions, i
 void newCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers,
                 int const *clusters);
 
-int *run(double **points, int const *rows, int const *dimensions, int const *k, double **centers, int *iterations, double *time) {
+int *run(double **points, int const *rows, int const *dimensions, int const *k, double **centers, int *iterations,
+         double *time) {
     // indexes of row, dimension, center(k)
-    int i, totalRuns = 0;
+    int totalRuns = 0;
 
     // one dimensional array to store the cluster of each data row
     int *clusters;
@@ -43,14 +25,11 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
     int clusterChange;
 
     // allocate memory for clusters
-    clusters = malloc((*rows) * sizeof(int));
+    clusters = calloc(*rows, sizeof(int));
     if (clusters == NULL) {
         printf("\nFailure to allocate room for the clusters");
         exit(0);
     }
-    initializeClusters(clusters, rows);
-
-    randomizeCenters(points, rows, dimensions, k, centers);
 
     // K-means steps
     // While you have change in clusters continue
@@ -74,112 +53,49 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
 
     double start_time = omp_get_wtime();
 
-    # pragma omp parallel shared(clusterChange, clusters, points, centers, totalRuns, rows, k, dimensions)
-    {
-        do {
-            clusterChange = 0;
-            # pragma omp parallel for private(i)
-            for (i = 0; i < *rows; i++) {
-                double minDistance = -1;
-                int cluster = 0;
-                for (int centerIndex = 0; centerIndex < *k; centerIndex++) {
-                    double sumDistance = 0;
-                    for (int j = 0; j < *dimensions; j++) {
-                        // Point distance from center
-                        double pointDistance = points[i][j] - centers[centerIndex][j];
-                        // Power of pointDistance used to calculate Euclidean Distance
-                        pointDistance = pointDistance * pointDistance;
-                        // Add to sum
-                        sumDistance = sumDistance + pointDistance;
-                    }
-                    double euclideanDistance = sqrt(sumDistance);
-                    // Set first distance as min distance
-                    if (minDistance == -1 || euclideanDistance < minDistance) {
-                        minDistance = euclideanDistance;
-                        cluster = centerIndex;
-                    }
-                }
 
-                if (clusters[i] != cluster) {
-                    clusterChange = 1;
+    do {
+        clusterChange = 0;
+        # pragma omp parallel for shared(clusters, points, centers, totalRuns, rows, k, dimensions) reduction(||:clusterChange) default(none) schedule(static)
+        for (int i = 0; i < *rows; i++) {
+            double minDistance = -1;
+            int cluster = 0;
+            for (int centerIndex = 0; centerIndex < *k; centerIndex++) {
+                double sumDistance = 0;
+                for (int j = 0; j < *dimensions; j++) {
+                    // Point distance from center
+                    double pointDistance = points[i][j] - centers[centerIndex][j];
+                    // Power of pointDistance used to calculate Euclidean Distance
+                    pointDistance = pointDistance * pointDistance;
+                    // Add to sum
+                    sumDistance = sumDistance + pointDistance;
                 }
-                clusters[i] = cluster;
+                double euclideanDistance = sqrt(sumDistance);
+                // Set first distance as min distance
+                if (minDistance == -1 || euclideanDistance < minDistance) {
+                    minDistance = euclideanDistance;
+                    cluster = centerIndex;
+                }
             }
 
-            if (clusterChange == 1) {
-                newCenters(points, rows, dimensions, k, centers, clusters);
+            if (clusters[i] != cluster) {
+                clusterChange = 1;
             }
-            totalRuns ++;
-        } while (clusterChange == 1);
-    }
+            clusters[i] = cluster;
+        }
+
+        if (clusterChange == 1) {
+            newCenters(points, rows, dimensions, k, centers, clusters);
+        }
+        totalRuns++;
+    } while (clusterChange == 1);
+
 
     double end_time = omp_get_wtime();
     *time = end_time - start_time;
 
     *iterations = totalRuns;
     return clusters;
-}
-
-void initializeClusters(int *clusters, int const *rows) {
-    # pragma omp parallel
-    {
-        # pragma omp for
-        for (int i = 0; i < *rows; i++) {
-            clusters[i] = 0;
-        }
-    }
-}
-
-void randomizeCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers) {
-    int *randomNumbers;
-    int i, j, dimension; // Indexes
-    int randomNumber; // Random Number
-    int foundSameRandomNumbers, foundSameCenters, foundSameDimension; // Flag for same data
-
-    int maxRuns = 5; // Flag set to 5 because if you cant find different point number then data have many duplicates
-    int randomNumberRuns = 0;
-
-    // allocate memory for random numbers
-    randomNumbers = malloc((*k) * sizeof(int));
-    if (randomNumbers == NULL) {
-        printf("\nFailure to allocate room for the random numbers");
-        exit(0);
-    }
-
-    do{
-
-        for(i = 0; i < *k; i++) {
-            // Make random numbers from rows
-            do {
-                foundSameRandomNumbers = 0;
-                randomNumber = rand() % *rows;
-                for (j = i; j > 0; j--) {
-                    if (randomNumbers[j - 1] == randomNumber) {
-                        foundSameRandomNumbers = 1;
-                    }
-                }
-            } while (foundSameRandomNumbers == 1);
-            randomNumbers[i] = randomNumber;
-
-            // Store points to centers
-            for (j = 0; j < *dimensions; j++) {
-                centers[i][j] = points[randomNumber][j];
-            }
-        }
-
-        // Check for same centers - duplicate data
-        foundSameCenters = 0;
-        for(i = 0; i < *k; i++){
-            for(j = *k -1; j > i; j--){
-                foundSameDimension = 1;
-                for(dimension = 0; dimension < *dimensions; dimension++){
-                    foundSameDimension = foundSameDimension && (centers[i][dimension] == centers[j][dimension]);
-                }
-                foundSameCenters = foundSameCenters || foundSameDimension;
-            }
-        }
-        randomNumberRuns ++;
-    } while (foundSameCenters == 1 && maxRuns > randomNumberRuns);
 }
 
 void newCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers,
@@ -197,17 +113,17 @@ void newCenters(double **points, const int *rows, int const *dimensions, int con
     }
 
     // Calculate sum per column and items found per cluster
-    # pragma omp parallel for private(cluster, column) shared(centers, clusterItems, points)
-    for(cluster = 0; cluster < *rows; cluster++){
-        for(column = 0; column < *dimensions; column++){
+//# pragma omp parallel for private(cluster, column) shared(centers, clusterItems, points)
+    for (cluster = 0; cluster < *rows; cluster++) {
+        for (column = 0; column < *dimensions; column++) {
             centers[clusters[cluster]][column] = centers[clusters[cluster]][column] + points[cluster][column];
         }
         clusterItems[clusters[cluster]] = clusterItems[clusters[cluster]] + 1;
     }
 
     // Average per column for new centers
-    # pragma omp parallel for private(cluster, column) shared(centers, clusterItems)
-    for(cluster = 0; cluster < *k; cluster++) {
+//# pragma omp parallel for private(cluster, column) shared(centers, clusterItems)
+    for (cluster = 0; cluster < *k; cluster++) {
         for (column = 0; column < *dimensions; column++) {
             if (clusterItems[cluster] > 0) {
                 centers[cluster][column] = centers[cluster][column] / clusterItems[cluster];
@@ -257,6 +173,6 @@ double *radius(int const *k, double **points, double **centers, int const *clust
     return radius;
 }
 
-char *runMethod(){
+char *runMethod() {
     return "omp";
 }
