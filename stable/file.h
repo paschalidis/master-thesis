@@ -4,7 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <io.h>
+#include <unistd.h>
+//#include <sys/io.h>
 
 #define FILE_NAME_CENTERS "centers"
 #define FILE_NAME_RESULTS "results"
