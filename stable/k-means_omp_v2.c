@@ -145,6 +145,8 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
 
             //todo this must be local per thread
             clusterItems[cluster]++;
+            // todo done
+            //threadClusterItems[omp_get_thread_num()][clusters[i]] ++;
 
             for(j = 0; j < *dimensions; j++){
                 //todo this must be local per thread
@@ -154,6 +156,14 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
 
         if (clusterChange == 1) {
             //todo reduction all local thread vars to main thread
+            //todo 1 done The main thread reduction the sums
+//            for(i = 0; i < numberOfThreads; i++)
+//            {
+//                for(j = 0; j < *k; j++)
+//                {
+//                    clusterItems[j] += threadClusterItems[i][j];
+//                }
+//            }
 
             // Average per column for new centers
             for (centerIndex = 0; centerIndex < *k; centerIndex++) {
