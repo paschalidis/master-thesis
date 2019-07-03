@@ -23,6 +23,13 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
     double *centerSumPointer;
     double **centersSum;
 
+    int numberOfThreads = omp_get_max_threads();
+
+    // Pointer for threadClusterItems
+    int *threadClusterItemsPointer;
+    // two dimension array to store cluster items per thread [noThread][noCluster]
+    int **threadClusterItems;
+
     // allocate memory for clusters
     clusters = calloc(*rows, sizeof(int));
     if (clusters == NULL) {
@@ -56,6 +63,36 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
     {
         centersSum[i] = centerSumPointer + (i * (*dimensions));
     }
+
+    // allocate the memory for the thread cluster items pointers
+    threadClusterItemsPointer = calloc(numberOfThreads * *k, sizeof(int));
+    if (threadClusterItemsPointer == NULL)
+    {
+        printf("\nFailure to allocate room for the thread cluster items pointers");
+        exit(0);
+    }
+
+    // allocate room for the pointers to the thread cluster items
+    threadClusterItems = malloc(numberOfThreads * sizeof(int *));
+    if (threadClusterItems == NULL)
+    {
+        printf("\nFailure to allocate room for thread cluster items");
+        exit(0);
+    }
+
+    // point the pointers for thread cluster items
+    for (i = 0; i < numberOfThreads; i++)
+    {
+        threadClusterItems[i] = threadClusterItemsPointer + (i * (*k));
+    }
+
+//    for(i = 0; i < numberOfThreads; i++){
+//        for(j = 0; j < *k; j++){
+//            printf("Thread Cluster Items [%d][%d] = %d\n", i, j, threadClusterItems[i][j]);
+//        }
+//    }
+//
+//    exit(1);
 
     // K-means steps
     // While you have change in clusters continue
