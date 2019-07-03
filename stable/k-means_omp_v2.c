@@ -30,6 +30,10 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
     // two dimension array to store cluster items per thread [noThread][noCluster]
     int **threadClusterItems;
 
+    double *threadCentersSumPointer;
+    // threed dimension array to store center sums per thread
+    double ***threadCentersSum;
+
     // allocate memory for clusters
     clusters = calloc(*rows, sizeof(int));
     if (clusters == NULL) {
@@ -52,7 +56,6 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
     }
     // allocate room for the pointers to the centers sum
     centersSum = malloc((*k) * sizeof(double *));
-    //centersSum = calloc(*k, sizeof(double *));
     if (centersSum == NULL)
     {
         printf("\nFailure to allocate room for center sum");
@@ -86,9 +89,44 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
         threadClusterItems[i] = threadClusterItemsPointer + (i * (*k));
     }
 
+    // allocate the memory for the thread center sum pointers
+    //threadCentersSumPointer = malloc(numberOfThreads * (*k) * (*dimensions) * sizeof(double));
+    threadCentersSumPointer = calloc(numberOfThreads * (*k) * (*dimensions), sizeof(double));
+    if (threadCentersSumPointer == NULL)
+    {
+        printf("\nFailure to allocate room for the thread center sum pointers");
+        exit(0);
+    }
+
+    // allocate room for the pointers to the thread centers sum
+    threadCentersSum = malloc(*dimensions * sizeof(double **));
+    if (threadCentersSum == NULL)
+    {
+        printf("\nFailure to allocate room for the thread centers sum");
+        exit(0);
+    }
+
+    for(i = 0; i < *dimensions; i++)
+    {
+        // allocate room fot the pointers to the thread centers sum 2
+        threadCentersSum[i] = malloc(*k * sizeof(double *));
+        if (threadCentersSum[i] == NULL)
+        {
+            printf("\nFailure to allocate room for the thread centers sum %d", i);
+            exit(0);
+        }
+        // point the pointers
+        for(j = 0; j < *k; j++)
+        {
+            threadCentersSum[i][j] = threadCentersSumPointer + (i * (numberOfThreads * (*k)) + j * numberOfThreads);
+        }
+    }
+
 //    for(i = 0; i < numberOfThreads; i++){
 //        for(j = 0; j < *k; j++){
-//            printf("Thread Cluster Items [%d][%d] = %d\n", i, j, threadClusterItems[i][j]);
+//            for(int z = 0; z < *dimensions; z++){
+//                printf("Thread Center Sum [%d][%d][%d] = %d\n", i, j, z, threadCentersSum[i][j][z]);
+//            }
 //        }
 //    }
 //
