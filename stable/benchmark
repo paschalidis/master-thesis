@@ -2,15 +2,15 @@
 
 echo "Hello world"
 
-make seq seq2 omp
+make seq seq2 omp omp2
 cd exe/
-for i in {1..10}
-do
-    for k in 2 4 8 16 32; do
-        echo $k
-        ./k-means_seq $k ../data/random_data_10000
-        ./k-means_seq_v2 $k ../data/random_data_10000
-        //./k-means_omp $k ../data/random_data_1000
-    done
+
+for k in 2 4 8 16 32; do
+    echo "K = $k"
+    ./k-means_seq $k 2030_30
+    ./k-means_seq_v2 $k 2030_30
+    ./k-means_omp $k 2030_30
+    ./k-means_omp_v2 $k 2030_30
 done
+
 

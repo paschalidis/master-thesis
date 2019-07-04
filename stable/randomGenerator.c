@@ -10,7 +10,7 @@ int main(int argc, const char *argv[])
     int range;
     int dimension;
     char fileStr[13] = "random_data_";
-    char fileName[30], rows[2], columns[2];
+    char fileName[100], rows[100], columns[100];
     //used it to generate new random number each time
     srand( (unsigned int) time(NULL) );
 
