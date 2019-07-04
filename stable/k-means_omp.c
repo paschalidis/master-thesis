@@ -9,25 +9,31 @@
  * @param k
  * @param centers
  * @param clusters
+ * @param clusterItems
  */
 void newCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers,
-                int const *clusters);
+                int const *clusters, int *clusterItems);
 
 int *run(double **points, int const *rows, int const *dimensions, int const *k, double **centers, int *iterations,
          double *time) {
-    // indexes of row, dimension, center(k)
-    int totalRuns = 0;
+    // iterations, flag to repeat k-means process as one or more cluster has change
+    int totalRuns, clusterChange;
 
     // one dimensional array to store the cluster of each data row
     int *clusters;
-
-    // flag to repeat k-means process as one or more cluster has change
-    int clusterChange;
+    int *clusterItems;
 
     // allocate memory for clusters
     clusters = calloc(*rows, sizeof(int));
     if (clusters == NULL) {
         printf("\nFailure to allocate room for the clusters");
+        exit(0);
+    }
+
+    // allocate memory for cluster items
+    clusterItems = malloc(*k * sizeof(int));
+    if (clusterItems == NULL) {
+        printf("\nFailure to allocate room for the cluster items");
         exit(0);
     }
 
@@ -50,10 +56,8 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
     // calculate average
     // and update new center
     // re run all steps until there are no change to cluster
-
+    totalRuns = 0;
     double start_time = omp_get_wtime();
-
-
     do {
         clusterChange = 0;
         # pragma omp parallel for shared(clusters, points, centers, rows, k, dimensions) reduction(||:clusterChange) default(none) schedule(static)
@@ -85,7 +89,7 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
         }
 
         if (clusterChange == 1) {
-            newCenters(points, rows, dimensions, k, centers, clusters);
+            newCenters(points, rows, dimensions, k, centers, clusters, clusterItems);
         }
         totalRuns++;
     } while (clusterChange == 1);
@@ -99,12 +103,12 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
 }
 
 void newCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers,
-                int const *clusters) {
-    int column, cluster;
-    int clusterItems[*k];
+                int const *clusters, int *clusterItems) {
+
+    int cluster, column;
 
     // Initialize all center points
-    # pragma omp parallel for private(cluster, column) shared(centers, clusterItems)
+    # pragma omp parallel for private(cluster, column) shared(centers, clusterItems, k, dimensions) default(none)
     for (cluster = 0; cluster < *k; cluster++) {
         for (column = 0; column < *dimensions; column++) {
             centers[cluster][column] = 0;
