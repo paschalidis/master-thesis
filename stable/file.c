@@ -101,7 +101,7 @@ void writeCenters(int const *cols, int const *k, double **centers, double *cente
     fclose(fp);
 }
 
-void writeResults(int const *k, double time, char const *method, int const *rows, int const *cols, const char *fileName, int const *iterations)
+void writeResults(int const *k, double time, char const *method, int const *rows, int const *cols, const char *fileName, int const *iterations, int numberOfThreads)
 {
     FILE *fp, *fplog;
     fp = fopen(FILE_NAME_RESULTS, "w");
@@ -114,8 +114,8 @@ void writeResults(int const *k, double time, char const *method, int const *rows
         printf("\n file %s opening failed ", FILE_NAME_RESULTS_LOG);
         exit(0);
     }
-    fprintf(fp, "K-means = %s\tK = %d\tN = %d\tDimension = %d\tIterations = %d\tTime = %f sec\t\tFile = %s \n", method, *k, *rows, *cols, *iterations, time, fileName);
-    fprintf(fplog, "K-means = %s\tK = %d\tN = %d\tDimension = %d\tIterations = %d\tTime = %f sec\t\tFile = %s \n", method, *k, *rows, *cols, *iterations, time, fileName);
+    fprintf(fp, "K-means = %s\tThreads = %d\tK = %d\tN = %d\tDimension = %d\tIterations = %d\tTime = %f sec\t\tFile = %s \n", method, numberOfThreads, *k, *rows, *cols, *iterations, time, fileName);
+    fprintf(fplog, "K-means = %s\tThreads = %d\tK = %d\tN = %d\tDimension = %d\tIterations = %d\tTime = %f sec\t\tFile = %s \n", method, numberOfThreads, *k, *rows, *cols, *iterations, time, fileName);
 
     fclose(fp);
     fclose(fplog);

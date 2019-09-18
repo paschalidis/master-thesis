@@ -251,3 +251,8 @@ double *radius(int const *k, double **points, double **centers, int const *clust
 char *runMethod(){
     return "omp_v2";
 }
+
+int getNumberOfThreads(){
+    int threadNumbers = omp_get_max_threads();
+    return threadNumbers;
+}

@@ -35,4 +35,5 @@ double *radius(int const *k, double **points, double **centers, int const *clust
 
 char *runMethod();
 
+int getNumberOfThreads();
 #endif

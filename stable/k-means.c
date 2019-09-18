@@ -182,3 +182,8 @@ double *radius(int const *k, double **points, double **centers, int const *clust
 char *runMethod(){
     return "sequential";
 }
+
+int getNumberOfThreads(){
+    int threadNumbers = 1;
+    return threadNumbers;
+}

@@ -64,8 +64,9 @@ void writeCenters(int const *cols, int const *k, double **centers, double *cente
  * @param cols
  * @param fileName
  * @param iterations
+ * @param numberOfThreads
  */
-void writeResults(int const *k, double time, char const *method, int const *rows, int const *cols, const char *fileName, int const *iterations);
+void writeResults(int const *k, double time, char const *method, int const *rows, int const *cols, const char *fileName, int const *iterations, int numberOfThreads);
 
 /**
  *

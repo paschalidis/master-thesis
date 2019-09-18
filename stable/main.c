@@ -30,8 +30,9 @@ void validateK(int const *k, int const *numberOfRows);
  * @param dimensions
  * @param k
  * @param time
+ * @param numberOfThreads
  */
-void printResults(int const *k, double time, char const *method, int const *rows, int const *cols, const char *fileName, int const *iterations);
+void printResults(int const *k, double time, char const *method, int const *rows, int const *cols, const char *fileName, int const *iterations, int numberOfThreads);
 
 /**
  * Randomize Centers of K-means for first run
@@ -141,9 +142,9 @@ int main(int argc, const char *argv[])
     writeClusters(rowPointer, &numberOfRows, &numberOfColumns, clusters, &k);
     writeCenters(&numberOfColumns, &k, centers, centerRadius);
 
-    writeResults(&k, totalTime, runMethod(), &numberOfRows, &numberOfColumns, fileName, &kmeansIterations);
+    writeResults(&k, totalTime, runMethod(), &numberOfRows, &numberOfColumns, fileName, &kmeansIterations, getNumberOfThreads());
 
-    printResults(&k, totalTime, runMethod(), &numberOfRows, &numberOfColumns, fileName, &kmeansIterations);
+    printResults(&k, totalTime, runMethod(), &numberOfRows, &numberOfColumns, fileName, &kmeansIterations, getNumberOfThreads());
 
     return 0;
 }
@@ -171,8 +172,8 @@ void validateK(int const *k, int const *numberOfRows)
     }
 }
 
-void printResults(int const *k, double time, char const *method, int const *rows, int const *cols, const char *fileName, int const *iterations){
-    printf("K-means = %s\tK = %d\tN = %d\tDimension = %d\tIterations = %d\tTime = %f sec\t\tFile = %s \n", method, *k, *rows, *cols, *iterations, time, fileName);
+void printResults(int const *k, double time, char const *method, int const *rows, int const *cols, const char *fileName, int const *iterations, int numberOfThreads){
+    printf("K-means = %s\tThreads = %d\tK = %d\tN = %d\tDimension = %d\tIterations = %d\tTime = %f sec\t\tFile = %s \n", method, numberOfThreads, *k, *rows, *cols, *iterations, time, fileName);
 }
 
 void initializeCenters(double **points, const int *rows, int const *dimensions, int const *k, double **centers, const char *fileName) {
