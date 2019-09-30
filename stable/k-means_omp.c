@@ -24,7 +24,7 @@ int *run(double **points, int const *rows, int const *dimensions, int const *k, 
     // two dimension array to store cluster items per thread [noThread][noCluster]
     int **threadClusterItems;
 
-    // three dimension array to store center sums per thread
+    // three dimension array to store center sums per thread [noThread][noCluster][sum]
     double ***threadCentersSum;
 
     // allocate memory for clusters
@@ -249,7 +249,7 @@ double *radius(int const *k, double **points, double **centers, int const *clust
 }
 
 char *runMethod(){
-    return "omp_v2";
+    return "omp";
 }
 
 int getNumberOfThreads(){
