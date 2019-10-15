@@ -1,6 +1,6 @@
-.PHONY: all seq seq2 omp #say_hello generate clean
+.PHONY: all seq omp generate clean
 
-CC = gcc	# compilet to use
+CC = gcc	# compiler to use
 LINKERFLAG = -lm
 OPENMPFLAG = -fopenmp
 

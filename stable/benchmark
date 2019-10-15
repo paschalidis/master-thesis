@@ -2,18 +2,33 @@
 
 echo "Hello world"
 
-make seq omp2
+
+if [ -n "$1" ]; then
+  file="$1"
+else
+  echo "Pass file path to Data Set. eg ./benchmark exe/random_data_1000_1"
+  exit 1;
+fi
+
+file="$1"
+
+if [[ $file == *"exe/"* ]]; then
+  echo "It's there!"
+  file=`echo "$file" | sed "s/.*\///"`
+fi
+
+make seq omp
 cd exe/
 
-for k in 2 4 8 16 32; do
+for k in 2 4 8 16; do
     echo "K = $k"
-    ./k-means_seq $k random_data_40000_200
+    ./k-means_seq $k "$file"
      export OMP_NUM_THREADS=2
-    ./k-means_omp_v2 $k random_data_40000_200
+    ./k-means_omp $k "$file"
     export OMP_NUM_THREADS=4
-    ./k-means_omp_v2 $k random_data_40000_200
+    ./k-means_omp $k "$file"
      export OMP_NUM_THREADS=8
-    ./k-means_omp_v2 $k random_data_40000_200
+    ./k-means_omp $k "$file"
 done
 
 
